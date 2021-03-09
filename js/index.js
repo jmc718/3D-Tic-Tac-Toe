@@ -18,15 +18,13 @@ function init() {
     // Attach the threeJS renderer to the HTML page
     document.body.appendChild(renderer.domElement);
 
-    // window.addEventListener("resize", () => {
-    //     renderer.setSize(window.innerWidth, window.innerHeight);
-    //     camera.aspect = window.innerWidth / window.innerHeight;
+    window.addEventListener("resize", () => {
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        camera.aspect = window.innerWidth / window.innerHeight;
 
-    //     camera.updateProjectMatrix();
-    // });
+        camera.updateProjectMatrix();
+    });
 
-    camera.position.x = 40;
-    camera.position.y = 40;
     camera.position.z = 100;
     camera.lookAt(new THREE.Vector3(0, 0, 0));
 }
