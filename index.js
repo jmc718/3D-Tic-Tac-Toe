@@ -78,6 +78,13 @@ function init() {
     sphere.receiveShadow = true;
     scene.add(sphere);
 
+
+    // Load in the Table
+
+    
+    // dracoLoader loads the .glb file (3D object from blender)
+
+
     var loader = new THREE.FontLoader();
     loader.load(
         "../fonts/helvetiker_regular.typeface.json",
