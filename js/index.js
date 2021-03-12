@@ -24,8 +24,8 @@ function init() {
     window.addEventListener("resize", () => {
         renderer.setSize(window.innerWidth, window.innerHeight);
         camera.aspect = window.innerWidth / window.innerHeight;
-
-        camera.updateProjectMatrix();
+        // index.js:28 Uncaught TypeError: camera.updateProjectMatrix is not a function
+        // camera.updateProjectMatrix();
     });
 
     camera.position.x = 40;
@@ -69,6 +69,34 @@ function init() {
     sphere.castShadow = true;
     sphere.receiveShadow = true;
     scene.add(sphere);
+
+    var loader = new THREE.FontLoader();
+    // loader.load( 'fonts/fontname.js', function ( font ) {
+
+    // var textGeometry = new THREE.TextGeometry( "text", {
+
+    //     font: font,
+
+    //     size: 50,
+    //     height: 10,
+    //     curveSegments: 12,
+
+    //     bevelThickness: 1,
+    //     bevelSize: 1,
+    //     bevelEnabled: true
+
+    // });
+
+    // var textMaterial = new THREE.MeshPhongMaterial( 
+    //     { color: 0xff0000, specular: 0xffffff }
+    // );
+
+    // var mesh = new THREE.Mesh( textGeometry, textMaterial );
+
+    // scene.add( mesh );
+
+    // });   
+
 }
 
 // This is the game/animation loop
