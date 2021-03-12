@@ -4,29 +4,30 @@ var geometry, material, mesh;
 init();
 animate();
 
-class box{
-    box(boxSize, boxColor) {
+class Box {
+    constructor(boxSize, boxColor) {
         boxGeometry = new THREE.BoxGeometry(boxSize, boxSize, boxSize);
         boxMaterial = new THREE.MeshPhongMaterial({ color: boxColor });
         box = new THREE.Mesh(boxGeometry, boxMaterial);
-        scene.add(box);
+        scene.add(Box);
     }
-    
 }
 
-
 function init() {
+    class Box {
+        constructor(boxSize, boxColor) {
+            boxGeometry = new THREE.BoxGeometry(boxSize, boxSize, boxSize);
+            boxMaterial = new THREE.MeshPhongMaterial({ color: boxColor });
+            box = new THREE.Mesh(boxGeometry, boxMaterial);
+            scene.add(Box);
+        }
+    }
     // Create the main scene for the 3D drawing
     scene = new THREE.Scene();
     // scene.background = new THREE.Color("white");
 
     // Every scene needs a camera
-    camera = new THREE.PerspectiveCamera(
-        75,
-        window.innerWidth / window.innerHeight,
-        1,
-        10000
-    );
+    camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 1, 10000);
 
     // the renderer renders the scene using the objects, lights and camera
     renderer = new THREE.WebGLRenderer();
@@ -80,7 +81,7 @@ function init() {
     // box.castShadow = true;
     // box.receiveShadow = true;
     // scene.add(box);
-    box(20, 0xff0000);
+    let box = new Box(20, 0xff0000);
 
     sphereGeometry = new THREE.SphereGeometry(12, 32, 32);
     sphereMaterial = new THREE.MeshPhongMaterial({ color: 0x0000ff });
@@ -90,39 +91,36 @@ function init() {
     sphere.receiveShadow = true;
     scene.add(sphere);
 
-
-
-    
     // Load in the Table
-    const loader = new GLTFLoader();
-    const tableData = await loader.loadAsync('../blender/table.glb');
-    
+    const objectLoader = new THREE.ObjectLoader();
+    objectLoader.load("../blender/table.glb", (root) => {
+        root.position.set(0, 0, 0);
+        scene.add(root);
+    });
+
     var loader = new THREE.FontLoader();
-    loader.load(
-        "../fonts/helvetiker_regular.typeface.json",
-        function (font) {
-            var textGeometry = new THREE.TextGeometry("X O", {
-                font: font,
+    loader.load("../three.js-master/examples/fonts/helvetiker_regular.typeface.json", function (font) {
+        var textGeometry = new THREE.TextGeometry("X O", {
+            font: font,
 
-                size: 25,
-                height: 10,
-                curveSegments: 12,
+            size: 25,
+            height: 10,
+            curveSegments: 12,
 
-                bevelThickness: 1,
-                bevelSize: 1,
-                bevelEnabled: true,
-            });
+            bevelThickness: 1,
+            bevelSize: 1,
+            bevelEnabled: true,
+        });
 
-            var textMaterial = new THREE.MeshPhongMaterial({
-                color: 0xff0000,
-                specular: 0xffffff,
-            });
+        var textMaterial = new THREE.MeshPhongMaterial({
+            color: 0xff0000,
+            specular: 0xffffff,
+        });
 
-            var mesh = new THREE.Mesh(textGeometry, textMaterial);
+        var mesh = new THREE.Mesh(textGeometry, textMaterial);
 
-            scene.add(mesh);
-        }
-    );
+        scene.add(mesh);
+    });
 }
 
 // This is the game/animation loop
