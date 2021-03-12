@@ -4,10 +4,18 @@ var geometry, material, mesh;
 init();
 animate();
 
+class box{
+    box(boxSize, boxColor) {
+        boxGeometry = new THREE.BoxGeometry(boxSize, boxSize, boxSize);
+        boxMaterial = new THREE.MeshPhongMaterial({ color: boxColor });
+        box = new THREE.Mesh(boxGeometry, boxMaterial);
+        scene.add(box);
+    }
+    
+}
+
+
 function init() {
-
-    import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js'
-
     // Create the main scene for the 3D drawing
     scene = new THREE.Scene();
     // scene.background = new THREE.Color("white");
@@ -64,14 +72,15 @@ function init() {
 
     scene.add(plane);
 
-    boxSize = 20;
-    boxGeometry = new THREE.BoxGeometry(boxSize, boxSize, boxSize);
-    boxMaterial = new THREE.MeshPhongMaterial({ color: 0xff0000 });
-    box = new THREE.Mesh(boxGeometry, boxMaterial);
-    box.position.set(0, 12, 0);
-    box.castShadow = true;
-    box.receiveShadow = true;
-    scene.add(box);
+    // boxSize = 20;
+    // boxGeometry = new THREE.BoxGeometry(boxSize, boxSize, boxSize);
+    // boxMaterial = new THREE.MeshPhongMaterial({ color: 0xff0000 });
+    // box = new THREE.Mesh(boxGeometry, boxMaterial);
+    // box.position.set(0, 12, 0);
+    // box.castShadow = true;
+    // box.receiveShadow = true;
+    // scene.add(box);
+    box(20, 0xff0000);
 
     sphereGeometry = new THREE.SphereGeometry(12, 32, 32);
     sphereMaterial = new THREE.MeshPhongMaterial({ color: 0x0000ff });
@@ -82,13 +91,12 @@ function init() {
     scene.add(sphere);
 
 
+
+    
     // Load in the Table
     const loader = new GLTFLoader();
+    const tableData = await loader.loadAsync('../blender/table.glb');
     
-    
-    // dracoLoader loads the .glb file (3D object from blender)
-
-
     var loader = new THREE.FontLoader();
     loader.load(
         "../fonts/helvetiker_regular.typeface.json",
