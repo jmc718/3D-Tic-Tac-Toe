@@ -71,31 +71,31 @@ function init() {
     scene.add(sphere);
 
     var loader = new THREE.FontLoader();
-    // loader.load( 'fonts/fontname.js', function ( font ) {
+    loader.load( '../.resources/fonts/helvetiker_regular.typeface.json', function ( font ) {
 
-    // var textGeometry = new THREE.TextGeometry( "text", {
+        var textGeometry = new THREE.TextGeometry( "text", {
 
-    //     font: font,
+            font: font,
 
-    //     size: 50,
-    //     height: 10,
-    //     curveSegments: 12,
+            size: 50,
+            height: 10,
+            curveSegments: 12,
 
-    //     bevelThickness: 1,
-    //     bevelSize: 1,
-    //     bevelEnabled: true
+            bevelThickness: 1,
+            bevelSize: 1,
+            bevelEnabled: true
 
-    // });
+        });
 
-    // var textMaterial = new THREE.MeshPhongMaterial( 
-    //     { color: 0xff0000, specular: 0xffffff }
-    // );
+        var textMaterial = new THREE.MeshPhongMaterial( 
+            { color: 0xff0000, specular: 0xffffff }
+        );
 
-    // var mesh = new THREE.Mesh( textGeometry, textMaterial );
+        var mesh = new THREE.Mesh( textGeometry, textMaterial );
 
-    // scene.add( mesh );
+        scene.add( mesh );
 
-    // });   
+    });   
 
 }
 
