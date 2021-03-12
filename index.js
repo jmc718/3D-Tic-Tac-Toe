@@ -82,10 +82,10 @@ function init() {
     loader.load(
         "../fonts/helvetiker_regular.typeface.json",
         function (font) {
-            var textGeometry = new THREE.TextGeometry("text", {
+            var textGeometry = new THREE.TextGeometry("X O", {
                 font: font,
 
-                size: 50,
+                size: 25,
                 height: 10,
                 curveSegments: 12,
 
