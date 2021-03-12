@@ -4,22 +4,14 @@ var geometry, material, mesh;
 init();
 animate();
 
-class Box {
-    constructor(boxSize, boxColor) {
-        boxGeometry = new THREE.BoxGeometry(boxSize, boxSize, boxSize);
-        boxMaterial = new THREE.MeshPhongMaterial({ color: boxColor });
-        box = new THREE.Mesh(boxGeometry, boxMaterial);
-        scene.add(Box);
-    }
-}
-
 function init() {
     class Box {
         constructor(boxSize, boxColor) {
-            boxGeometry = new THREE.BoxGeometry(boxSize, boxSize, boxSize);
-            boxMaterial = new THREE.MeshPhongMaterial({ color: boxColor });
-            box = new THREE.Mesh(boxGeometry, boxMaterial);
-            scene.add(Box);
+            var boxGeometry = new THREE.BoxGeometry(boxSize, boxSize, boxSize);
+            var boxMaterial = new THREE.MeshPhongMaterial({ color: boxColor });
+            var box = new THREE.Mesh(boxGeometry, boxMaterial);
+            box.position.y += boxSize / 2;
+            scene.add(box);
         }
     }
     // Create the main scene for the 3D drawing
@@ -81,7 +73,7 @@ function init() {
     // box.castShadow = true;
     // box.receiveShadow = true;
     // scene.add(box);
-    let box = new Box(20, 0xff0000);
+    box = new Box(20, 0xff0000);
 
     sphereGeometry = new THREE.SphereGeometry(12, 32, 32);
     sphereMaterial = new THREE.MeshPhongMaterial({ color: 0x0000ff });
@@ -93,7 +85,7 @@ function init() {
 
     // Load in the Table
     const objectLoader = new THREE.ObjectLoader();
-    objectLoader.load("../blender/table.glb", (root) => {
+    objectLoader.load("../blender/table.obj", (root) => {
         root.position.set(0, 0, 0);
         scene.add(root);
     });
