@@ -63,7 +63,7 @@ function init() {
     plane.receiveShadow = true;
     plane.rotation.x = Math.PI * -0.5;
 
-    // scene.add(plane);
+    scene.add(plane);
 
     // boxSize = 20;
     // boxGeometry = new THREE.BoxGeometry(boxSize, boxSize, boxSize);
@@ -73,7 +73,7 @@ function init() {
     // box.castShadow = true;
     // box.receiveShadow = true;
     // scene.add(box);
-    // box = new Box(20, 0xff0000);
+    box = new Box(20, 0xff0000);
 
     sphereGeometry = new THREE.SphereGeometry(12, 32, 32);
     sphereMaterial = new THREE.MeshPhongMaterial({ color: 0x0000ff });
@@ -81,7 +81,7 @@ function init() {
     sphere.position.set(50, 12, 0);
     sphere.castShadow = true;
     sphere.receiveShadow = true;
-    // scene.add(sphere);
+    scene.add(sphere);
 
     // Load in the Table
     const objectLoader = new THREE.ObjectLoader();
@@ -111,7 +111,7 @@ function init() {
 
         var mesh = new THREE.Mesh(textGeometry, textMaterial);
 
-        // scene.add(mesh);
+        scene.add(mesh);
     });
 }
 
