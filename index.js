@@ -10,7 +10,12 @@ function init() {
     // scene.background = new THREE.Color("white");
 
     // Every scene needs a camera
-    camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 1, 10000);
+    camera = new THREE.PerspectiveCamera(
+        75,
+        window.innerWidth / window.innerHeight,
+        1,
+        10000
+    );
 
     // the renderer renders the scene using the objects, lights and camera
     renderer = new THREE.WebGLRenderer();
@@ -46,7 +51,10 @@ function init() {
     const planeSize = 10000;
 
     const planeGeo = new THREE.PlaneGeometry(planeSize, planeSize);
-    const planeMat = new THREE.MeshPhongMaterial({ color: 0xc2805f, side: THREE.DoubleSide });
+    const planeMat = new THREE.MeshPhongMaterial({
+        color: 0xc2805f,
+        side: THREE.DoubleSide,
+    });
     const plane = new THREE.Mesh(planeGeo, planeMat);
     plane.receiveShadow = true;
     plane.rotation.x = Math.PI * -0.5;
@@ -71,32 +79,31 @@ function init() {
     scene.add(sphere);
 
     var loader = new THREE.FontLoader();
-    loader.load( '../.resources/fonts/helvetiker_regular.typeface.json', function ( font ) {
+    loader.load(
+        ".resources/fonts/helvetiker_regular.typeface.json",
+        function (font) {
+            var textGeometry = new THREE.TextGeometry("text", {
+                font: font,
 
-        var textGeometry = new THREE.TextGeometry( "text", {
+                size: 50,
+                height: 10,
+                curveSegments: 12,
 
-            font: font,
+                bevelThickness: 1,
+                bevelSize: 1,
+                bevelEnabled: true,
+            });
 
-            size: 50,
-            height: 10,
-            curveSegments: 12,
+            var textMaterial = new THREE.MeshPhongMaterial({
+                color: 0xff0000,
+                specular: 0xffffff,
+            });
 
-            bevelThickness: 1,
-            bevelSize: 1,
-            bevelEnabled: true
+            var mesh = new THREE.Mesh(textGeometry, textMaterial);
 
-        });
-
-        var textMaterial = new THREE.MeshPhongMaterial( 
-            { color: 0xff0000, specular: 0xffffff }
-        );
-
-        var mesh = new THREE.Mesh( textGeometry, textMaterial );
-
-        scene.add( mesh );
-
-    });   
-
+            scene.add(mesh);
+        }
+    );
 }
 
 // This is the game/animation loop
