@@ -80,7 +80,7 @@ function init() {
 
     var loader = new THREE.FontLoader();
     loader.load(
-        ".resources/fonts/helvetiker_regular.typeface.json",
+        "../fonts/helvetiker_regular.typeface.json",
         function (font) {
             var textGeometry = new THREE.TextGeometry("text", {
                 font: font,
