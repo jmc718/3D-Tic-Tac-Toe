@@ -5,6 +5,9 @@ init();
 animate();
 
 function init() {
+
+    import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js'
+
     // Create the main scene for the 3D drawing
     scene = new THREE.Scene();
     // scene.background = new THREE.Color("white");
@@ -80,7 +83,8 @@ function init() {
 
 
     // Load in the Table
-
+    const loader = new GLTFLoader();
+    
     
     // dracoLoader loads the .glb file (3D object from blender)
 
