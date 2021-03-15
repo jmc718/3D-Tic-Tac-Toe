@@ -4,6 +4,10 @@ var geometry, material, mesh;
 init();
 animate();
 
+import { OrbitControls } from './.resources/node_modules/three/examples/js/controls/OrbitControls'
+
+// ctrl + shift + i in the browser brings up developer tools & shows error messages
+
 function init() {
     class Box {
         constructor(boxSize, boxColor) {
@@ -14,12 +18,18 @@ function init() {
             scene.add(box);
         }
     }
+
+    /*******************************************************************************************
+     * This section contains the bare necessities for THREE.js, like the scene, renderer, camera,
+     * etc.
+     ******************************************************************************************/
     // Create the main scene for the 3D drawing
     scene = new THREE.Scene();
-    // scene.background = new THREE.Color("white");
+    
 
     // Every scene needs a camera
     camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 1, 10000);
+
 
     // the renderer renders the scene using the objects, lights and camera
     renderer = new THREE.WebGLRenderer();
@@ -27,8 +37,10 @@ function init() {
     renderer.shadowMap.type = THREE.PCFSoftShadowMap; // default THREE.PCFShadowMap
     renderer.setSize(window.innerWidth, window.innerHeight);
 
+
     // Attach the threeJS renderer to the HTML page
     document.body.appendChild(renderer.domElement);
+
 
     window.addEventListener("resize", () => {
         renderer.setSize(window.innerWidth, window.innerHeight);
@@ -42,8 +54,22 @@ function init() {
     camera.position.z = 10;
     camera.lookAt(new THREE.Vector3(0, 0, 0));
 
+
+
+    const controls = new THREE.OrbitControls(camera, renderer.domElement);
+    controls.update();
+
+
+
+
+    /*******************************************************************************************
+     * This section changes the lighting and background
+     ******************************************************************************************/
+    // Change these to change the ground and sky color
     const skyColor = 0xffffff; // light blue
-    const groundColor = 0xc2805f; // brownish orange
+    const groundColor = 0x07e31d; // lawn green
+
+
     const intensity = 1;
     const light = new THREE.DirectionalLight(skyColor, intensity);
     light.castShadow = true;
@@ -56,7 +82,7 @@ function init() {
 
     const planeGeo = new THREE.PlaneGeometry(planeSize, planeSize);
     const planeMat = new THREE.MeshPhongMaterial({
-        color: 0xc2805f,
+        color: groundColor,
         side: THREE.DoubleSide,
     });
     const plane = new THREE.Mesh(planeGeo, planeMat);
@@ -124,6 +150,9 @@ function animate() {
 
     // sphere.position.x = Math.sin(time) * 50;
     // sphere.position.z = Math.cos(time) * 50;
+    
+    // This updates orbit controls every frame
+    controls.update();
 
     renderer.render(scene, camera);
 }
