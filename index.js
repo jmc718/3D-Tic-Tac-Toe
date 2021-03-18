@@ -127,20 +127,130 @@ function init() {
             specular: 0xffffff,
         });
 
-        var X = new THREE.Mesh(XGeometry, textMaterial);
-        X.position.x -= 5;
-        X.position.z = 6 + 27;
-        X.position.y = 55;
-        X.rotation.x = Math.PI / -2;
 
-        var O = new THREE.Mesh(OGeometry, textMaterial);
-        O.position.x -= 6;
-        O.position.z = 6;
-        O.position.y = 55;
-        O.rotation.x = Math.PI / -2;
+        // X Locations
 
-        scene.add(O);
-        scene.add(X);
+        var X1 = new THREE.Mesh(XGeometry, textMaterial);
+        X1.position.x -= 33;
+        X1.position.z = -19;
+        X1.position.y = 55;
+        X1.rotation.x = Math.PI / -2;
+
+        var X2 = new THREE.Mesh(XGeometry, textMaterial);
+        X2.position.x -= 6;
+        X2.position.z = -19;
+        X2.position.y = 55;
+        X2.rotation.x = Math.PI / -2;
+
+        var X3 = new THREE.Mesh(XGeometry, textMaterial);
+        X3.position.x = 21;
+        X3.position.z = -19;
+        X3.position.y = 55;
+        X3.rotation.x = Math.PI / -2;
+
+        var X4 = new THREE.Mesh(XGeometry, textMaterial);
+        X4.position.x -= 33;
+        X4.position.z = 8;
+        X4.position.y = 55;
+        X4.rotation.x = Math.PI / -2;
+
+        var X5 = new THREE.Mesh(XGeometry, textMaterial);
+        X5.position.x -= 6;
+        X5.position.z = 8;
+        X5.position.y = 55;
+        X5.rotation.x = Math.PI / -2;
+
+        var X6 = new THREE.Mesh(XGeometry, textMaterial);
+        X6.position.x = 21;
+        X6.position.z = 8;
+        X6.position.y = 55;
+        X6.rotation.x = Math.PI / -2;
+
+        var X7 = new THREE.Mesh(XGeometry, textMaterial);
+        X7.position.x -= 33;
+        X7.position.z = 6 + 29;
+        X7.position.y = 55;
+        X7.rotation.x = Math.PI / -2;
+
+        var X8 = new THREE.Mesh(XGeometry, textMaterial);
+        X8.position.x -= 6;
+        X8.position.z = 6 + 29;
+        X8.position.y = 55;
+        X8.rotation.x = Math.PI / -2;
+
+        var X9 = new THREE.Mesh(XGeometry, textMaterial);
+        X9.position.x = 21;
+        X9.position.z = 6 + 29;
+        X9.position.y = 55;
+        X9.rotation.x = Math.PI / -2;
+
+
+        // O Locations (The only difference between the Xs and Os is that the x position is off by 1)
+
+        var O1 = new THREE.Mesh(OGeometry, textMaterial);
+        O1.position.x -= 34;
+        O1.position.z = -19;
+        O1.position.y = 55;
+        O1.rotation.x = Math.PI / -2;
+
+        var O2 = new THREE.Mesh(OGeometry, textMaterial);
+        O2.position.x -= 7;
+        O2.position.z = -19;
+        O2.position.y = 55;
+        O2.rotation.x = Math.PI / -2;
+
+        var O3 = new THREE.Mesh(OGeometry, textMaterial);
+        O3.position.x = 20;
+        O3.position.z = -19;
+        O3.position.y = 55;
+        O3.rotation.x = Math.PI / -2;
+
+        var O4 = new THREE.Mesh(OGeometry, textMaterial);
+        O4.position.x -= 34;
+        O4.position.z = 8;
+        O4.position.y = 55;
+        O4.rotation.x = Math.PI / -2;
+
+        var O5 = new THREE.Mesh(OGeometry, textMaterial);
+        O5.position.x -= 7;
+        O5.position.z = 8;
+        O5.position.y = 55;
+        O5.rotation.x = Math.PI / -2;
+
+        var O6 = new THREE.Mesh(OGeometry, textMaterial);
+        O6.position.x = 20;
+        O6.position.z = 8;
+        O6.position.y = 55;
+        O6.rotation.x = Math.PI / -2;
+
+        var O7 = new THREE.Mesh(OGeometry, textMaterial);
+        O7.position.x -= 34;
+        O7.position.z = 6 + 29;
+        O7.position.y = 55;
+        O7.rotation.x = Math.PI / -2;
+
+        var O8 = new THREE.Mesh(OGeometry, textMaterial);
+        O8.position.x -= 7;
+        O8.position.z = 6 + 29;
+        O8.position.y = 55;
+        O8.rotation.x = Math.PI / -2;
+
+        var O9 = new THREE.Mesh(OGeometry, textMaterial);
+        O9.position.x = 20;
+        O9.position.z = 6 + 29;
+        O9.position.y = 55;
+        O9.rotation.x = Math.PI / -2;
+
+
+        scene.add(X1);
+        scene.add(X2);
+        scene.add(O3);
+        scene.add(O4);
+        scene.add(O5);
+        scene.add(X6);
+        scene.add(X7);
+        scene.add(O8);
+        scene.add(X9);
     });
 
     controls.update();
