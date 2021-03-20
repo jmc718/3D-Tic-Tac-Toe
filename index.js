@@ -110,7 +110,7 @@ function init() {
             }
         });
 
-        // scene.add(root);
+        scene.add(root);
     });
     
 
@@ -134,8 +134,8 @@ function init() {
         var OGeometry = new THREE.TextGeometry("O", {
             font: font,
 
-            size: 350,
-            height: 50,
+            size: 15,
+            height: 2,
             curveSegments: 12,
 
             bevelThickness: 1,
