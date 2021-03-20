@@ -75,6 +75,25 @@ function init() {
     plane.rotation.x = Math.PI * -0.5;
     scene.add(plane);
 
+
+    //Add Background scene
+
+    const skyBoxGeo = new THREE.BoxGeometry(10000, 10000, 10000);
+    const skybox = new THREE.Mesh(skyBoxGeo);
+
+    scene.add(skybox);
+    // Works but we can do better
+    // const backgroundTexture = new THREE.TextureLoader().load('.resources/textures/Background Test.jpg');
+
+    // scene.background = backgroundTexture;
+
+    // backgroundTexture.wrapS = THREE.MirroredRepeatWrapping;
+    // backgroundTexture.wrapT = THREE.MirroredRepeatWrapping;
+
+
+
+    
+
     /*******************************************************************************************
      * This section adds in objects into the scene
      ******************************************************************************************/
@@ -251,9 +270,8 @@ function init() {
         scene.add(X7);
         scene.add(O8);
         scene.add(X9);
-    });
-
-    controls.update();
+    });  
+    
 }
 
 // This is the game/animation loop
@@ -267,4 +285,6 @@ function animate() {
     controls.update();
 
     renderer.render(scene, camera);
+    // renderer.render(backgroundScene, backgroundCamera);
+
 }
