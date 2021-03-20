@@ -1,6 +1,9 @@
 import * as THREE from "./three/build/three.module.js";
 import { OrbitControls } from "./three/examples/jsm/controls/OrbitControls.js";
 import { OBJLoader } from "./three/examples/jsm/loaders/OBJLoader.js";
+// import { DragControls } from "./three/examples/jsm/controls/DragControls.js";
+
+// THREE.DragControls = require("three-drag-controls")(THREE);
 
 var scene, camera, renderer;
 var controls;
@@ -114,6 +117,11 @@ function init() {
 
         scene.add(root);
     });
+
+
+    // Add an array of objects that we want to be draggable
+    // var objects = [];
+
 
     // Add in X's and O's
     const fontLoader = new THREE.FontLoader();
@@ -270,8 +278,22 @@ function init() {
         scene.add(X7);
         scene.add(O8);
         scene.add(X9);
+
+        // objects.push(X1);
+        // objects.push(X2);
+        // objects.push(O3);
+        // objects.push(O4);
+        // objects.push(O5);
+        // objects.push(X6);
+        // objects.push(X7);
+        // objects.push(O8);
+        // objects.push(X9);
     });  
     
+    // THREE.DragControls = require("three-drag-controls")(THREE);
+    // var controls = new THREE.DragControls( objects, camera, renderer.domElement );
+    // const dragControls = new DragControls(objects, camera, domElement);
+
 }
 
 // This is the game/animation loop
