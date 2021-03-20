@@ -8,6 +8,28 @@ import { OBJLoader } from "./three/examples/jsm/loaders/OBJLoader.js";
 var scene, camera, renderer;
 var controls;
 
+class Ground {
+    constructor(size, textureFile) {
+        this.size = size;
+        const grass = new THREE.TextureLoader().load(textureFile);
+        grass.wrapS = THREE.RepeatWrapping;
+        grass.wrapT = THREE.RepeatWrapping;
+        // grass.repeat.set(10, 10);
+        
+        const planeGeo = new THREE.PlaneGeometry(size, size);
+        
+        const planeMat = new THREE.MeshBasicMaterial({
+            map: grass,
+            side: THREE.DoubleSide,
+        });
+        const plane = new THREE.Mesh(planeGeo, planeMat);
+        plane.receiveShadow = true;
+        plane.rotation.x = Math.PI * -0.5;
+        var ground = plane;
+        scene.add(ground);
+    }
+}
+
 init();
 animate();
 
@@ -38,7 +60,7 @@ function init() {
         camera.updateProjectionMatrix();
     });
 
-    camera.position.set(0, 110, 20);
+    camera.position.set(0, 2500, 2500);
     camera.lookAt(new THREE.Vector3(0, 0, 0));
 
     /*******************************************************************************************
@@ -61,41 +83,17 @@ function init() {
     const ambientLight = new THREE.AmbientLight(0x404040);
     scene.add(ambientLight);
 
-    const texture = new THREE.TextureLoader().load("./.resources/textures/Grass_001_COLOR.jpg");
-    texture.wrapS = THREE.RepeatWrapping;
-    texture.wrapT = THREE.RepeatWrapping;
-    texture.repeat.set(10, 10);
-
-    const planeSize = 500;
-
-    const planeGeo = new THREE.PlaneGeometry(planeSize, planeSize);
-    const planeMat = new THREE.MeshLambertMaterial({
-        map: texture,
-        side: THREE.DoubleSide,
-    });
-    const plane = new THREE.Mesh(planeGeo, planeMat);
-    plane.receiveShadow = true;
-    plane.rotation.x = Math.PI * -0.5;
-    scene.add(plane);
-
-
     //Add Background scene
-
-    const skyBoxGeo = new THREE.BoxGeometry(10000, 10000, 10000);
-    const skybox = new THREE.Mesh(skyBoxGeo);
-
+    const skybox = createSkybox();
     scene.add(skybox);
-    // Works but we can do better
-    // const backgroundTexture = new THREE.TextureLoader().load('.resources/textures/Background Test.jpg');
-
-    // scene.background = backgroundTexture;
-
-    // backgroundTexture.wrapS = THREE.MirroredRepeatWrapping;
-    // backgroundTexture.wrapT = THREE.MirroredRepeatWrapping;
 
 
+    const grass = new THREE.TextureLoader().load("./.resources/textures/Grass_001_COLOR.jpg");
+    grass.wrapS = THREE.RepeatWrapping;
+    grass.wrapT = THREE.RepeatWrapping;
+    grass.repeat.set(10, 10);
 
-    
+    let ground = new Ground(8000, '.resources/textures/field-skyboxes/Meadow/negy.jpg'); //"./.resources/textures/Grass_001_COLOR.jpg");
 
     /*******************************************************************************************
      * This section adds in objects into the scene
@@ -107,7 +105,7 @@ function init() {
     const objLoader = new OBJLoader();
     objLoader.load("./.resources/blender/table.obj", (root) => {
         root.position.set(0, 0, 0);
-        let s = 20;
+        let s = 350;
         root.scale.set(s, s, s);
         root.traverse(function (node) {
             if (node.isMesh) {
@@ -117,6 +115,10 @@ function init() {
 
         scene.add(root);
     });
+    
+
+    // Add an array of objects that we want to be draggable
+    // var objects = [];
 
 
     // Add an array of objects that we want to be draggable
@@ -309,4 +311,31 @@ function animate() {
     renderer.render(scene, camera);
     // renderer.render(backgroundScene, backgroundCamera);
 
+}
+
+// This loads in all the textures into the skybox
+function createSkybox(){
+    const positiveX = new THREE.TextureLoader().load('.resources/textures/field-skyboxes/Meadow/posx.jpg');
+    const positiveY = new THREE.TextureLoader().load('.resources/textures/field-skyboxes/Meadow/posy.jpg');
+    const positiveZ = new THREE.TextureLoader().load('.resources/textures/field-skyboxes/Meadow/posz.jpg');
+    const negativeX = new THREE.TextureLoader().load('.resources/textures/field-skyboxes/Meadow/negx.jpg');
+    const negativeY = new THREE.TextureLoader().load('.resources/textures/field-skyboxes/Meadow/negy.jpg');
+    const negativeZ = new THREE.TextureLoader().load('.resources/textures/field-skyboxes/Meadow/negz.jpg');
+
+    // Puts all of the loaded textures into an array
+    const skyboxTextures = [positiveX, negativeX, positiveY, negativeY, positiveZ, negativeZ];
+
+    // Takes all of the textures from the array above and converts it into
+    // an array of meshes that only show up on the inside 
+    const skyboxMeshes   = skyboxTextures.map(texture =>{
+        return new THREE.MeshBasicMaterial({
+            map:texture,
+            side:THREE.BackSide
+        });
+    });
+
+    const skyboxGeo = new THREE.BoxGeometry(10000, 10000, 10000);
+    skyboxGeo.applyMatrix( new THREE.Matrix4().makeTranslation(0, 2000, 0));
+    
+    return new THREE.Mesh(skyboxGeo, skyboxMeshes);
 }
