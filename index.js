@@ -7,26 +7,105 @@ import { OBJLoader } from "./three/examples/jsm/loaders/OBJLoader.js";
 
 var scene, camera, renderer;
 var controls;
+const red = 0xff0000;
+const skyColor = 0xffffff; // light blue
+const style = "three/examples/fonts/helvetiker_regular.typeface.json";
+const grass = ".resources/textures/field-skyboxes/Meadow/negy.jpg";
+const marble = "./.resources/textures/Red_Marble_002_COLOR.jpg";
+const table = "./.resources/blender/table.obj";
 
 class Ground {
     constructor(size, textureFile) {
-        this.size = size;
-        const grass = new THREE.TextureLoader().load(textureFile);
-        grass.wrapS = THREE.RepeatWrapping;
-        grass.wrapT = THREE.RepeatWrapping;
-        // grass.repeat.set(10, 10);
-        
-        const planeGeo = new THREE.PlaneGeometry(size, size);
-        
-        const planeMat = new THREE.MeshBasicMaterial({
-            map: grass,
+        const texture = new THREE.TextureLoader().load(textureFile);
+        texture.wrapS = THREE.RepeatWrapping;
+        texture.wrapT = THREE.RepeatWrapping;
+        texture.repeat.set(10, 10);
+        const geometry = new THREE.PlaneGeometry(size, size);
+        const material = new THREE.MeshLambertMaterial({
+            map: texture,
             side: THREE.DoubleSide,
         });
-        const plane = new THREE.Mesh(planeGeo, planeMat);
-        plane.receiveShadow = true;
-        plane.rotation.x = Math.PI * -0.5;
-        var ground = plane;
-        scene.add(ground);
+        const mesh = new THREE.Mesh(geometry, material);
+        mesh.receiveShadow = true;
+        mesh.rotation.x = Math.PI * -0.5;
+        scene.add(mesh);
+    }
+}
+
+class Table {
+    constructor(size, objectFile, textureFile) {
+        const texture = new THREE.TextureLoader().load(textureFile);
+        const material = new THREE.MeshPhongMaterial({ map: texture });
+
+        const objLoader = new OBJLoader();
+        objLoader.load(objectFile, (mesh) => {
+            mesh.scale.set(size, size, size);
+            mesh.traverse(function (node) {
+                if (node.isMesh) {
+                    node.material = material;
+                }
+            });
+            scene.add(mesh);
+        });
+    }
+}
+
+class GamePiece {
+    constructor(shape, size, col, row) {
+        const fontLoader = new THREE.FontLoader();
+        fontLoader.load(style, function (font) {
+            const geometry = new THREE.TextGeometry(shape, {
+                font: font,
+                size: size,
+                height: size / 15,
+                bevelEnabled: true,
+                bevelThickness: size / 15,
+                bevelSize: size / 15,
+            });
+            const material = new THREE.MeshLambertMaterial({
+                color: red,
+                specular: 0xffffff,
+            });
+            const mesh = new THREE.Mesh(geometry, material);
+            mesh.rotation.x = Math.PI / -2;
+            mesh.position.y = 975;
+            if (col == "A") {
+                mesh.position.x = (-33 * size) / 12;
+            }
+            if (col == "B") {
+                mesh.position.x = -5 * (size / 12);
+            }
+            if (col == "C") {
+                mesh.position.x = 22 * (size / 12);
+            }
+            if (row == 1) {
+                mesh.position.z = -21 * (size / 12);
+            }
+            if (row == 2) {
+                mesh.position.z = 7 * (size / 12);
+            }
+            if (row == 3) {
+                mesh.position.z = 34 * (size / 12);
+            }
+            scene.add(mesh);
+        });
+    }
+}
+
+class Lighting {
+    constructor() {
+        // Add Directional Light
+        const intensity = 1;
+        const light = new THREE.DirectionalLight(skyColor, intensity);
+        light.castShadow = true;
+        light.position.set(100, 100, -100);
+        light.target.position.set(-4, 0, -4);
+        scene.add(light);
+        scene.add(light.target);
+
+        // Add Ambient Light
+        const ambientLight = new THREE.AmbientLight(0x404040);
+        scene.add(ambientLight);
     }
 }
 
@@ -47,6 +126,8 @@ function init() {
 
     // the renderer renders the scene using the objects, lights and camera
     renderer = new THREE.WebGLRenderer({ antialias: true });
+    renderer.shadowMap.enabled = true;
+    renderer.shadowMap.type = THREE.PCFSoftShadowMap;
     renderer.setSize(window.innerWidth, window.innerHeight);
 
     // Attach the threeJS renderer to the HTML page
@@ -60,242 +141,37 @@ function init() {
         camera.updateProjectionMatrix();
     });
 
-    camera.position.set(0, 2500, 2500);
+    camera.position.set(0, 2200, 500);
     camera.lookAt(new THREE.Vector3(0, 0, 0));
 
     /*******************************************************************************************
      * This section changes the lighting and background
      ******************************************************************************************/
     // Change these to change the ground and sky color
-    const skyColor = 0xffffff; // light blue
-    const groundColor = 0x07e31d; // lawn green
 
-    // Add Directional Light
-    const intensity = 1;
-    const light = new THREE.DirectionalLight(skyColor, intensity);
-    light.castShadow = true;
-    light.position.set(100, 100, -100);
-    light.target.position.set(-4, 0, -4);
-    scene.add(light);
-    scene.add(light.target);
-
-    // Add Ambient Light
-    const ambientLight = new THREE.AmbientLight(0x404040);
-    scene.add(ambientLight);
+    let light = new Lighting();
 
     //Add Background scene
     const skybox = createSkybox();
     scene.add(skybox);
 
+    let ground = new Ground(8000, grass);
+    let board = new Table(350, table, marble);
 
-    const grass = new THREE.TextureLoader().load("./.resources/textures/Grass_001_COLOR.jpg");
-    grass.wrapS = THREE.RepeatWrapping;
-    grass.wrapT = THREE.RepeatWrapping;
-    grass.repeat.set(10, 10);
+    let size = 205;
+    let X1 = new GamePiece("O", size, "A", 1);
+    let X2 = new GamePiece("O", size, "A", 2);
+    let X3 = new GamePiece("O", size, "A", 3);
+    let X4 = new GamePiece("O", size, "B", 1);
+    let X5 = new GamePiece("O", size, "B", 2);
+    let X6 = new GamePiece("O", size, "B", 3);
+    let X7 = new GamePiece("O", size, "C", 1);
+    let X8 = new GamePiece("O", size, "C", 2);
+    let X9 = new GamePiece("O", size, "C", 3);
 
-    let ground = new Ground(8000, '.resources/textures/field-skyboxes/Meadow/negy.jpg'); //"./.resources/textures/Grass_001_COLOR.jpg");
-
-    /*******************************************************************************************
-     * This section adds in objects into the scene
-     ******************************************************************************************/
-    // Load in the Table
-    var marble = new THREE.TextureLoader().load("./.resources/textures/Red_Marble_002_COLOR.jpg");
-    var tableMat = new THREE.MeshPhongMaterial({ map: marble });
-
-    const objLoader = new OBJLoader();
-    objLoader.load("./.resources/blender/table.obj", (root) => {
-        root.position.set(0, 0, 0);
-        let s = 350;
-        root.scale.set(s, s, s);
-        root.traverse(function (node) {
-            if (node.isMesh) {
-                node.material = tableMat;
-            }
-        });
-
-        scene.add(root);
-    });
-    
-
-    // Add an array of objects that we want to be draggable
-    // var objects = [];
-
-
-    // Add an array of objects that we want to be draggable
-    // var objects = [];
-
-
-    // Add in X's and O's
-    const fontLoader = new THREE.FontLoader();
-    fontLoader.load("three/examples/fonts/helvetiker_regular.typeface.json", function (font) {
-        var XGeometry = new THREE.TextGeometry("X", {
-            font: font,
-
-            size: 15,
-            height: 2,
-            curveSegments: 12,
-
-            bevelThickness: 1,
-            bevelSize: 1,
-            bevelEnabled: true,
-        });
-        var OGeometry = new THREE.TextGeometry("O", {
-            font: font,
-
-            size: 15,
-            height: 2,
-            curveSegments: 12,
-
-            bevelThickness: 1,
-            bevelSize: 1,
-            bevelEnabled: true,
-        });
-
-        var textMaterial = new THREE.MeshLambertMaterial({
-            color: 0xff0000,
-            specular: 0xffffff,
-        });
-
-
-        // X Locations
-
-        var X1 = new THREE.Mesh(XGeometry, textMaterial);
-        X1.position.x -= 33;
-        X1.position.z = -19;
-        X1.position.y = 55;
-        X1.rotation.x = Math.PI / -2;
-
-        var X2 = new THREE.Mesh(XGeometry, textMaterial);
-        X2.position.x -= 6;
-        X2.position.z = -19;
-        X2.position.y = 55;
-        X2.rotation.x = Math.PI / -2;
-
-        var X3 = new THREE.Mesh(XGeometry, textMaterial);
-        X3.position.x = 21;
-        X3.position.z = -19;
-        X3.position.y = 55;
-        X3.rotation.x = Math.PI / -2;
-
-        var X4 = new THREE.Mesh(XGeometry, textMaterial);
-        X4.position.x -= 33;
-        X4.position.z = 8;
-        X4.position.y = 55;
-        X4.rotation.x = Math.PI / -2;
-
-        var X5 = new THREE.Mesh(XGeometry, textMaterial);
-        X5.position.x -= 6;
-        X5.position.z = 8;
-        X5.position.y = 55;
-        X5.rotation.x = Math.PI / -2;
-
-        var X6 = new THREE.Mesh(XGeometry, textMaterial);
-        X6.position.x = 21;
-        X6.position.z = 8;
-        X6.position.y = 55;
-        X6.rotation.x = Math.PI / -2;
-
-        var X7 = new THREE.Mesh(XGeometry, textMaterial);
-        X7.position.x -= 33;
-        X7.position.z = 6 + 29;
-        X7.position.y = 55;
-        X7.rotation.x = Math.PI / -2;
-
-        var X8 = new THREE.Mesh(XGeometry, textMaterial);
-        X8.position.x -= 6;
-        X8.position.z = 6 + 29;
-        X8.position.y = 55;
-        X8.rotation.x = Math.PI / -2;
-
-        var X9 = new THREE.Mesh(XGeometry, textMaterial);
-        X9.position.x = 21;
-        X9.position.z = 6 + 29;
-        X9.position.y = 55;
-        X9.rotation.x = Math.PI / -2;
-
-
-        // O Locations (The only difference between the Xs and Os is that the x position is off by 1)
-
-        var O1 = new THREE.Mesh(OGeometry, textMaterial);
-        O1.position.x -= 34;
-        O1.position.z = -19;
-        O1.position.y = 55;
-        O1.rotation.x = Math.PI / -2;
-
-        var O2 = new THREE.Mesh(OGeometry, textMaterial);
-        O2.position.x -= 7;
-        O2.position.z = -19;
-        O2.position.y = 55;
-        O2.rotation.x = Math.PI / -2;
-
-        var O3 = new THREE.Mesh(OGeometry, textMaterial);
-        O3.position.x = 20;
-        O3.position.z = -19;
-        O3.position.y = 55;
-        O3.rotation.x = Math.PI / -2;
-
-        var O4 = new THREE.Mesh(OGeometry, textMaterial);
-        O4.position.x -= 34;
-        O4.position.z = 8;
-        O4.position.y = 55;
-        O4.rotation.x = Math.PI / -2;
-
-        var O5 = new THREE.Mesh(OGeometry, textMaterial);
-        O5.position.x -= 7;
-        O5.position.z = 8;
-        O5.position.y = 55;
-        O5.rotation.x = Math.PI / -2;
-
-        var O6 = new THREE.Mesh(OGeometry, textMaterial);
-        O6.position.x = 20;
-        O6.position.z = 8;
-        O6.position.y = 55;
-        O6.rotation.x = Math.PI / -2;
-
-        var O7 = new THREE.Mesh(OGeometry, textMaterial);
-        O7.position.x -= 34;
-        O7.position.z = 6 + 29;
-        O7.position.y = 55;
-        O7.rotation.x = Math.PI / -2;
-
-        var O8 = new THREE.Mesh(OGeometry, textMaterial);
-        O8.position.x -= 7;
-        O8.position.z = 6 + 29;
-        O8.position.y = 55;
-        O8.rotation.x = Math.PI / -2;
-
-        var O9 = new THREE.Mesh(OGeometry, textMaterial);
-        O9.position.x = 20;
-        O9.position.z = 6 + 29;
-        O9.position.y = 55;
-        O9.rotation.x = Math.PI / -2;
-
-
-        scene.add(X1);
-        scene.add(X2);
-        scene.add(O3);
-        scene.add(O4);
-        scene.add(O5);
-        scene.add(X6);
-        scene.add(X7);
-        scene.add(O8);
-        scene.add(X9);
-
-        // objects.push(X1);
-        // objects.push(X2);
-        // objects.push(O3);
-        // objects.push(O4);
-        // objects.push(O5);
-        // objects.push(X6);
-        // objects.push(X7);
-        // objects.push(O8);
-        // objects.push(X9);
-    });  
-    
     // THREE.DragControls = require("three-drag-controls")(THREE);
     // var controls = new THREE.DragControls( objects, camera, renderer.domElement );
     // const dragControls = new DragControls(objects, camera, domElement);
-
 }
 
 // This is the game/animation loop
@@ -303,39 +179,36 @@ function init() {
 function animate() {
     requestAnimationFrame(animate);
 
-    let time = new Date().getTime() * 0.001;
-
     // This updates orbit controls every frame
     controls.update();
 
     renderer.render(scene, camera);
     // renderer.render(backgroundScene, backgroundCamera);
-
 }
 
 // This loads in all the textures into the skybox
-function createSkybox(){
-    const positiveX = new THREE.TextureLoader().load('.resources/textures/field-skyboxes/Meadow/posx.jpg');
-    const positiveY = new THREE.TextureLoader().load('.resources/textures/field-skyboxes/Meadow/posy.jpg');
-    const positiveZ = new THREE.TextureLoader().load('.resources/textures/field-skyboxes/Meadow/posz.jpg');
-    const negativeX = new THREE.TextureLoader().load('.resources/textures/field-skyboxes/Meadow/negx.jpg');
-    const negativeY = new THREE.TextureLoader().load('.resources/textures/field-skyboxes/Meadow/negy.jpg');
-    const negativeZ = new THREE.TextureLoader().load('.resources/textures/field-skyboxes/Meadow/negz.jpg');
+function createSkybox() {
+    const positiveX = new THREE.TextureLoader().load(".resources/textures/field-skyboxes/Meadow/posx.jpg");
+    const positiveY = new THREE.TextureLoader().load(".resources/textures/field-skyboxes/Meadow/posy.jpg");
+    const positiveZ = new THREE.TextureLoader().load(".resources/textures/field-skyboxes/Meadow/posz.jpg");
+    const negativeX = new THREE.TextureLoader().load(".resources/textures/field-skyboxes/Meadow/negx.jpg");
+    const negativeY = new THREE.TextureLoader().load(".resources/textures/field-skyboxes/Meadow/negy.jpg");
+    const negativeZ = new THREE.TextureLoader().load(".resources/textures/field-skyboxes/Meadow/negz.jpg");
 
     // Puts all of the loaded textures into an array
     const skyboxTextures = [positiveX, negativeX, positiveY, negativeY, positiveZ, negativeZ];
 
     // Takes all of the textures from the array above and converts it into
-    // an array of meshes that only show up on the inside 
-    const skyboxMeshes   = skyboxTextures.map(texture =>{
+    // an array of meshes that only show up on the inside
+    const skyboxMeshes = skyboxTextures.map((texture) => {
         return new THREE.MeshBasicMaterial({
-            map:texture,
-            side:THREE.BackSide
+            map: texture,
+            side: THREE.BackSide,
         });
     });
 
     const skyboxGeo = new THREE.BoxGeometry(10000, 10000, 10000);
-    skyboxGeo.applyMatrix( new THREE.Matrix4().makeTranslation(0, 2000, 0));
-    
+    skyboxGeo.applyMatrix(new THREE.Matrix4().makeTranslation(0, 2000, 0));
+
     return new THREE.Mesh(skyboxGeo, skyboxMeshes);
 }
