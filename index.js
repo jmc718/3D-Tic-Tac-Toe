@@ -10,7 +10,7 @@ var controls;
 const red = 0xff0000;
 const skyColor = 0xffffff; // light blue
 const style = "three/examples/fonts/helvetiker_regular.typeface.json";
-const grass = ".resources/textures/field-skyboxes/Meadow/negy.jpg";
+const grass = "./.resources/textures/field-skyboxes/Meadow/negy.jpg";
 const marble = "./.resources/textures/Red_Marble_002_COLOR.jpg";
 const table = "./.resources/blender/table.obj";
 
@@ -19,7 +19,7 @@ class Ground {
         const texture = new THREE.TextureLoader().load(textureFile);
         texture.wrapS = THREE.RepeatWrapping;
         texture.wrapT = THREE.RepeatWrapping;
-        texture.repeat.set(10, 10);
+        texture.repeat.set(4, 4);
         const geometry = new THREE.PlaneGeometry(size, size);
         const material = new THREE.MeshLambertMaterial({
             map: texture,
@@ -155,7 +155,7 @@ function init() {
     const skybox = createSkybox();
     scene.add(skybox);
 
-    let ground = new Ground(8000, grass);
+    // let ground = new Ground(8000, grass);
     let board = new Table(350, table, marble);
 
     let size = 205;
