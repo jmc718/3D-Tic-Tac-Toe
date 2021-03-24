@@ -6,9 +6,11 @@ var scene, camera, renderer;
 var controls;
 
 const raycaster = new THREE.Raycaster(); // This is used so THREE.js can detect what the mouse is hovering
-const mouse = new THREE.Vector2();
+const mouse     = new THREE.Vector2();
 
-let INTERSECTED;
+var   matrix    = new THREE.Matrix4()    // Used in render() to move the gamepieces
+// matrix.identity();                       // Sets it to an identity matrix by default
+
 
 const red = 0xff0000;
 const skyColor = 0xffffff; // light blue
@@ -70,6 +72,7 @@ class GamePiece {
                 specular: 0xffffff,
             });
             const mesh = new THREE.Mesh(geometry, material);
+            mesh.name = "gamepiece" // Used in render()
             mesh.rotation.x = Math.PI / -2;
             mesh.position.y = 975;
             if (col == "A") {
@@ -92,7 +95,7 @@ class GamePiece {
             }
             scene.add(mesh);
         });
-    }
+    } 
 }
 
 
@@ -171,7 +174,7 @@ function init() {
      * This section deals with moving pieces around
      ******************************************************************************************/
     document.addEventListener( 'mousemove', onDocumentMouseMove, false);
-
+    document.addEventListener( 'mousedown'    , onDocumentMouseDown, false);
 
 
 }
@@ -198,39 +201,29 @@ function animate() {
  * Renders everything onto the screen
 ******************************************************************************************/
 function render(){
-
     // Starts the ray from where the mouse is
     raycaster.setFromCamera( mouse, camera );
 
     // returns an array of all objects inside the scene that intersects with the mouse.
     const intersects = raycaster.intersectObjects( scene.children ); 
 
-
-
-    /*******************************************************************************************
-     * Bug: It doesn't recognize getHex or setHex, but it does recognize when the mouse hovers
-     * the tic tac toe piece. 
-    ******************************************************************************************/
-
-
     // Checks the first thing that the mouse intersected (the closest one), 
     //and highlights it if it can
     if (intersects.length > 0){
-        if ( INTERSECTED != intersects[0].object ) {
-            if ( INTERSECTED )
-                INTERSECTED.material.emissive.setHex( INTERSECTED.currentHex );
-            
-            INTERSECTED = intersects[0].object;
-            INTERSECTED.currentHex = INTERSECTED.material.emissive.getHex();
-            INTERSECTED.material.emissive.setHex( 0x00ff00 ); 
-        }
-    } else {
-        if ( INTERSECTED ) INTERSECTED.material.emissive.setHex( INTERSECTED.currentHex );
-
-        INTERSECTED = null;
+        if (intersects[0].object.name == "gamepiece")
+            intersects[0].object.applyMatrix4( matrix );
     }
+    matrix.identity();
+    
 
     renderer.render(scene, camera);
+}
+
+/*******************************************************************************************
+ * Handles clicking down on gamepieces
+******************************************************************************************/
+function onDocumentMouseDown( event ) {
+    
 }
 
 /*******************************************************************************************
@@ -241,6 +234,8 @@ function onDocumentMouseMove( event ) {
 
     mouse.x = ( event.clientX / window.innerWidth ) * 2 - 1;
     mouse.y = - ( event.clientY / window.innerHeight ) * 2 + 1;
+
+    matrix.makeTranslation(mouse.x * 10, mouse.y * 10, 0);
 }
 
 /*******************************************************************************************
