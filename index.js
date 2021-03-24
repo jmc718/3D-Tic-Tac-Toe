@@ -1,7 +1,7 @@
 import * as THREE from "./three/build/three.module.js";
 import { OrbitControls } from "./three/examples/jsm/controls/OrbitControls.js";
 import { OBJLoader } from "./three/examples/jsm/loaders/OBJLoader.js";
-// import { DragControls } from "./three/examples/jsm/controls/DragControls.js";
+import { DragControls } from "./three/examples/jsm/controls/DragControls.js";
 
 // THREE.DragControls = require("three-drag-controls")(THREE);
 
@@ -92,6 +92,7 @@ class GamePiece {
     }
 }
 
+
 class Lighting {
     constructor() {
         // Add Directional Light
@@ -108,6 +109,7 @@ class Lighting {
         scene.add(ambientLight);
     }
 }
+
 
 init();
 animate();
@@ -158,20 +160,16 @@ function init() {
     // let ground = new Ground(8000, grass);
     let board = new Table(350, table, marble);
 
-    let size = 205;
-    let X1 = new GamePiece("O", size, "A", 1);
-    let X2 = new GamePiece("O", size, "A", 2);
-    let X3 = new GamePiece("O", size, "A", 3);
-    let X4 = new GamePiece("O", size, "B", 1);
-    let X5 = new GamePiece("O", size, "B", 2);
-    let X6 = new GamePiece("O", size, "B", 3);
-    let X7 = new GamePiece("O", size, "C", 1);
-    let X8 = new GamePiece("O", size, "C", 2);
-    let X9 = new GamePiece("O", size, "C", 3);
+    // Initializes the gamepieces, places them in their default positions, and returns an array of all of the game Pieces
+    var gamePieces = createPieces();
+
+
 
     // THREE.DragControls = require("three-drag-controls")(THREE);
     // var controls = new THREE.DragControls( objects, camera, renderer.domElement );
     // const dragControls = new DragControls(objects, camera, domElement);
+
+    
 }
 
 // This is the game/animation loop
@@ -211,4 +209,21 @@ function createSkybox() {
     skyboxGeo.applyMatrix(new THREE.Matrix4().makeTranslation(0, 2000, 0));
 
     return new THREE.Mesh(skyboxGeo, skyboxMeshes);
+}
+
+
+function createPieces() {
+    let size = 205;
+
+    let X1 = new GamePiece("O", size, "A", 1);
+    let X2 = new GamePiece("O", size, "A", 2);
+    let X3 = new GamePiece("O", size, "A", 3);
+    let X4 = new GamePiece("O", size, "B", 1);
+    let X5 = new GamePiece("O", size, "B", 2);
+    let X6 = new GamePiece("O", size, "B", 3);
+    let X7 = new GamePiece("O", size, "C", 1);
+    let X8 = new GamePiece("O", size, "C", 2);
+    let X9 = new GamePiece("O", size, "C", 3);
+
+    return [X1, X2, X3, X4, X5, X6, X7, X8, X9];
 }
