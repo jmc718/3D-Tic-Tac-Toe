@@ -1,12 +1,15 @@
 import * as THREE from "./three/build/three.module.js";
 import { OrbitControls } from "./three/examples/jsm/controls/OrbitControls.js";
 import { OBJLoader } from "./three/examples/jsm/loaders/OBJLoader.js";
-import { DragControls } from "./three/examples/jsm/controls/DragControls.js";
-
-// THREE.DragControls = require("three-drag-controls")(THREE);
 
 var scene, camera, renderer;
 var controls;
+
+const raycaster = new THREE.Raycaster(); // This is used so THREE.js can detect what the mouse is hovering
+const mouse = new THREE.Vector2();
+
+let INTERSECTED;
+
 const red = 0xff0000;
 const skyColor = 0xffffff; // light blue
 const style = "three/examples/fonts/helvetiker_regular.typeface.json";
@@ -110,12 +113,13 @@ class Lighting {
     }
 }
 
-
 init();
 animate();
 
 // ctrl + shift + i in the browser brings up developer tools & shows error messages
 
+
+// Start Script
 function init() {
     /*******************************************************************************************
      * Adds all of the main parts of THREE.js, like the scene, camera, etc
@@ -163,28 +167,85 @@ function init() {
     // Initializes the gamepieces, places them in their default positions, and returns an array of all of the game Pieces
     var gamePieces = createPieces();
 
+    /*******************************************************************************************
+     * This section deals with moving pieces around
+     ******************************************************************************************/
+    document.addEventListener( 'mousemove', onDocumentMouseMove, false);
 
 
-    // THREE.DragControls = require("three-drag-controls")(THREE);
-    // var controls = new THREE.DragControls( objects, camera, renderer.domElement );
-    // const dragControls = new DragControls(objects, camera, domElement);
 
-    
 }
+// End script
 
-// This is the game/animation loop
-// This is called ~60 times a second
+
+
+
+/*******************************************************************************************
+ * This is the game/animation loop
+ * It is called ~60 times a second
+******************************************************************************************/
 function animate() {
     requestAnimationFrame(animate);
 
     // This updates orbit controls every frame
     controls.update();
 
-    renderer.render(scene, camera);
-    // renderer.render(backgroundScene, backgroundCamera);
+    
+    render();
 }
 
-// This loads in all the textures into the skybox
+/*******************************************************************************************
+ * Renders everything onto the screen
+******************************************************************************************/
+function render(){
+
+    // Starts the ray from where the mouse is
+    raycaster.setFromCamera( mouse, camera );
+
+    // returns an array of all objects inside the scene that intersects with the mouse.
+    const intersects = raycaster.intersectObjects( scene.children ); 
+
+
+
+    /*******************************************************************************************
+     * Bug: It doesn't recognize getHex or setHex, but it does recognize when the mouse hovers
+     * the tic tac toe piece. 
+    ******************************************************************************************/
+
+
+    // Checks the first thing that the mouse intersected (the closest one), 
+    //and highlights it if it can
+    if (intersects.length > 0){
+        if ( INTERSECTED != intersects[0].object ) {
+            if ( INTERSECTED )
+                INTERSECTED.material.emissive.setHex( INTERSECTED.currentHex );
+            
+            INTERSECTED = intersects[0].object;
+            INTERSECTED.currentHex = INTERSECTED.material.emissive.getHex();
+            INTERSECTED.material.emissive.setHex( 0x00ff00 ); 
+        }
+    } else {
+        if ( INTERSECTED ) INTERSECTED.material.emissive.setHex( INTERSECTED.currentHex );
+
+        INTERSECTED = null;
+    }
+
+    renderer.render(scene, camera);
+}
+
+/*******************************************************************************************
+ * Updates where the mouse is
+******************************************************************************************/
+function onDocumentMouseMove( event ) {
+    event.preventDefault();
+
+    mouse.x = ( event.clientX / window.innerWidth ) * 2 - 1;
+    mouse.y = - ( event.clientY / window.innerHeight ) * 2 + 1;
+}
+
+/*******************************************************************************************
+ * Creates and returns the skybox
+******************************************************************************************/
 function createSkybox() {
     const positiveX = new THREE.TextureLoader().load(".resources/textures/field-skyboxes/Meadow/posx.jpg");
     const positiveY = new THREE.TextureLoader().load(".resources/textures/field-skyboxes/Meadow/posy.jpg");
@@ -211,7 +272,9 @@ function createSkybox() {
     return new THREE.Mesh(skyboxGeo, skyboxMeshes);
 }
 
-
+/*******************************************************************************************
+ * Creates all of the game pieces and returns them in an array
+******************************************************************************************/
 function createPieces() {
     let size = 205;
 
@@ -227,3 +290,5 @@ function createPieces() {
 
     return [X1, X2, X3, X4, X5, X6, X7, X8, X9];
 }
+
+
