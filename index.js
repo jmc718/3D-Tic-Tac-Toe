@@ -5,17 +5,16 @@ import { OBJLoader } from "./three/examples/jsm/loaders/OBJLoader.js";
 var scene, camera, renderer;
 var controls;
 
-const raycaster = new THREE.Raycaster(); // This is used so THREE.js can detect what the mouse is hovering
-const mouse     = new THREE.Vector2();
+const raycaster = new THREE.Raycaster(); // This is used so THREE.js can detect where the mouse is hovering
+const mouse = new THREE.Vector2();
 
-var   matrix    = new THREE.Matrix4()    // Used in render() to move the gamepieces
+var matrix = new THREE.Matrix4(); // Used in render() to move the gamepieces
 // matrix.identity();                       // Sets it to an identity matrix by default
-
 
 const red = 0xff0000;
 const skyColor = 0xffffff; // light blue
 const style = "three/examples/fonts/helvetiker_regular.typeface.json";
-const grass = "./.resources/textures/field-skyboxes/Meadow/negy.jpg";
+const grass = "./.resources/textures/Grass_001_COLOR.jpg";
 const marble = "./.resources/textures/Red_Marble_002_COLOR.jpg";
 const table = "./.resources/blender/table.obj";
 
@@ -55,49 +54,79 @@ class Table {
     }
 }
 
-class GamePiece {
-    constructor(shape, size, col, row) {
-        const fontLoader = new THREE.FontLoader();
-        fontLoader.load(style, function (font) {
-            const geometry = new THREE.TextGeometry(shape, {
-                font: font,
-                size: size,
-                height: size / 15,
-                bevelEnabled: true,
-                bevelThickness: size / 15,
-                bevelSize: size / 15,
-            });
-            const material = new THREE.MeshLambertMaterial({
-                color: red,
-                specular: 0xffffff,
-            });
-            const mesh = new THREE.Mesh(geometry, material);
-            mesh.name = "gamepiece" // Used in render()
-            mesh.rotation.x = Math.PI / -2;
-            mesh.position.y = 975;
-            if (col == "A") {
-                mesh.position.x = (-33 * size) / 12;
-            }
-            if (col == "B") {
-                mesh.position.x = -5 * (size / 12);
-            }
-            if (col == "C") {
-                mesh.position.x = 22 * (size / 12);
-            }
-            if (row == 1) {
-                mesh.position.z = -21 * (size / 12);
-            }
-            if (row == 2) {
-                mesh.position.z = 7 * (size / 12);
-            }
-            if (row == 3) {
-                mesh.position.z = 34 * (size / 12);
-            }
-            scene.add(mesh);
-        });
-    } 
+class OPiece {
+    constructor(size, color) {
+        const innerG = new THREE.CylinderGeometry(0.5, 0.5, 0.1, 100, 1, true, 0, 6.283185);
+        const topG = new THREE.RingGeometry(0.5, 1, 100, 1, 0, 6.283185);
+        const bottomG = new THREE.RingGeometry(0.5, 1, 100, 1, 0, 6.283185);
+        const outerG = new THREE.CylinderGeometry(1, 1, 0.1, 100, 1, true, 0, 6.283185);
+        const pieceMat = new THREE.MeshLambertMaterial({ color: color, specular: 0xffffff, side: THREE.DoubleSide });
+        const top = new THREE.Mesh(topG, pieceMat);
+        top.rotation.x = Math.PI * -0.5;
+        top.position.y += 0.05;
+        const bottom = new THREE.Mesh(bottomG, pieceMat);
+        bottom.rotation.x = Math.PI * -0.5;
+        bottom.position.y -= 0.05;
+        const out = new THREE.Mesh(outerG, pieceMat);
+        const inn = new THREE.Mesh(innerG, pieceMat);
+        const OPiece = new THREE.Group();
+        OPiece.add(top, bottom, out, inn);
+        OPiece.scale.set(size, size, size);
+        scene.add(OPiece);
+        return OPiece;
+    }
 }
 
+class XPiece {
+    constructor(size, color) {
+        const geo = new THREE.BoxGeometry(0.3, 1, 0.1, 1, 1, 1, 1);
+        const pieceMat = new THREE.MeshLambertMaterial({ color: color, specular: 0xffffff, side: THREE.DoubleSide });
+        const leftX = new THREE.Mesh(geo, pieceMat);
+        leftX.rotation.z = Math.PI / 2;
+        const rightX = new THREE.Mesh(geo, pieceMat);
+        leftX.rotation.z = -Math.PI / 2;
+        const XPiece = new THREE.Group();
+        XPiece.add(leftX, rightX);
+        XPiece.scale.set(size * 2, size * 2, size * 2);
+        XPiece.rotation.z += Math.PI / 4;
+        XPiece.rotation.x = Math.PI * -0.5;
+        scene.add(XPiece);
+        return XPiece;
+    }
+}
+
+class GamePiece {
+    constructor(shape, size, col, row) {
+        let piece;
+        if (shape == "O") {
+            piece = new OPiece(size, red);
+            piece.position.y = 960;
+        }
+        if (shape == "X") {
+            piece = new XPiece(size, red);
+            piece.position.y = 960;
+        }
+        if (col == "A") {
+            piece.position.x = -483;
+        }
+        if (col == "B") {
+            piece.position.x = 0;
+        }
+        if (col == "C") {
+            piece.position.x = 483;
+        }
+        if (row == 1) {
+            piece.position.z = -483;
+        }
+        if (row == 2) {
+            piece.position.z = 0;
+        }
+        if (row == 3) {
+            piece.position.z = 483;
+        }
+        piece.name = "gamepiece";
+    }
+}
 
 class Lighting {
     constructor() {
@@ -116,11 +145,26 @@ class Lighting {
     }
 }
 
+class PickHelper {
+    constructor() {
+        this.pickedObject = null;
+        this.pickedObjectSavedColor = 0;
+    }
+
+    pick(normalizedPosition, scene, camEnumerator, time) {
+        raycaster.setFromCamera(normalizedPosition, camera);
+
+        const intersectedObjects = raycaster.intersectObjects(scene.children);
+        if (intersectedObjects.length) {
+            this.pickedObject = intersectedObjects[0].object;
+        }
+    }
+}
+
 init();
 animate();
 
 // ctrl + shift + i in the browser brings up developer tools & shows error messages
-
 
 // Start Script
 function init() {
@@ -142,7 +186,7 @@ function init() {
     // Attach the threeJS renderer to the HTML page
     document.body.appendChild(renderer.domElement);
 
-    controls = new OrbitControls(camera, renderer.domElement);
+    // controls = new OrbitControls(camera, renderer.domElement);
 
     window.addEventListener("resize", () => {
         renderer.setSize(window.innerWidth, window.innerHeight);
@@ -150,7 +194,7 @@ function init() {
         camera.updateProjectionMatrix();
     });
 
-    camera.position.set(0, 2200, 500);
+    camera.position.set(0, 2250, 750);
     camera.lookAt(new THREE.Vector3(0, 0, 0));
 
     /*******************************************************************************************
@@ -168,79 +212,76 @@ function init() {
     let board = new Table(350, table, marble);
 
     // Initializes the gamepieces, places them in their default positions, and returns an array of all of the game Pieces
-    var gamePieces = createPieces();
+    // var gamePieces = createPieces();
 
     /*******************************************************************************************
      * This section deals with moving pieces around
      ******************************************************************************************/
-    document.addEventListener( 'mousemove', onDocumentMouseMove, false);
-    document.addEventListener( 'mousedown'    , onDocumentMouseDown, false);
-
-
+    document.addEventListener("mousemove", onDocumentMouseMove, false);
+    document.addEventListener("mousedown", onDocumentMouseDown, false);
 }
 // End script
-
-
-
 
 /*******************************************************************************************
  * This is the game/animation loop
  * It is called ~60 times a second
-******************************************************************************************/
+ ******************************************************************************************/
 function animate() {
     requestAnimationFrame(animate);
 
     // This updates orbit controls every frame
-    controls.update();
+    // controls.update();
 
-    
     render();
 }
 
 /*******************************************************************************************
  * Renders everything onto the screen
-******************************************************************************************/
-function render(){
+ ******************************************************************************************/
+function render() {
     // Starts the ray from where the mouse is
-    raycaster.setFromCamera( mouse, camera );
+    raycaster.setFromCamera(mouse, camera);
 
     // returns an array of all objects inside the scene that intersects with the mouse.
-    const intersects = raycaster.intersectObjects( scene.children ); 
+    const intersects = raycaster.intersectObjects(scene.children);
 
-    // Checks the first thing that the mouse intersected (the closest one), 
+    // Checks the first thing that the mouse intersected (the closest one),
     //and highlights it if it can
-    if (intersects.length > 0){
-        if (intersects[0].object.name == "gamepiece")
-            intersects[0].object.applyMatrix4( matrix );
+    if (intersects.length > 0) {
+        if (intersects[0].object.type == "Group") intersects[0].object.translateY(500);
     }
     matrix.identity();
-    
 
     renderer.render(scene, camera);
 }
 
 /*******************************************************************************************
  * Handles clicking down on gamepieces
-******************************************************************************************/
-function onDocumentMouseDown( event ) {
-    
+ ******************************************************************************************/
+function onDocumentMouseDown(event) {
+    event.preventDefault();
+
+    // mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
+    // mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
+
+    // matrix.makeTranslation(mouse.x * 10, mouse.y * 10, 0);
 }
 
 /*******************************************************************************************
  * Updates where the mouse is
-******************************************************************************************/
-function onDocumentMouseMove( event ) {
+ ******************************************************************************************/
+function onDocumentMouseMove(event) {
     event.preventDefault();
 
-    mouse.x = ( event.clientX / window.innerWidth ) * 2 - 1;
-    mouse.y = - ( event.clientY / window.innerHeight ) * 2 + 1;
+    mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
+    mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
 
-    matrix.makeTranslation(mouse.x * 10, mouse.y * 10, 0);
+    // matrix.makeTranslation(mouse.x * 10, mouse.y * 10, 0);
 }
 
 /*******************************************************************************************
  * Creates and returns the skybox
-******************************************************************************************/
+ ******************************************************************************************/
 function createSkybox() {
     const positiveX = new THREE.TextureLoader().load(".resources/textures/field-skyboxes/Meadow/posx.jpg");
     const positiveY = new THREE.TextureLoader().load(".resources/textures/field-skyboxes/Meadow/posy.jpg");
@@ -269,15 +310,15 @@ function createSkybox() {
 
 /*******************************************************************************************
  * Creates all of the game pieces and returns them in an array
-******************************************************************************************/
+ ******************************************************************************************/
 function createPieces() {
-    let size = 205;
+    let size = 175;
 
-    let X1 = new GamePiece("O", size, "A", 1);
+    let X1 = new GamePiece("X", size, "A", 1);
     let X2 = new GamePiece("O", size, "A", 2);
     let X3 = new GamePiece("O", size, "A", 3);
     let X4 = new GamePiece("O", size, "B", 1);
-    let X5 = new GamePiece("O", size, "B", 2);
+    let X5 = new GamePiece("X", size, "B", 2);
     let X6 = new GamePiece("O", size, "B", 3);
     let X7 = new GamePiece("O", size, "C", 1);
     let X8 = new GamePiece("O", size, "C", 2);
@@ -285,5 +326,3 @@ function createPieces() {
 
     return [X1, X2, X3, X4, X5, X6, X7, X8, X9];
 }
-
-
