@@ -76,6 +76,46 @@ class OPiece {
         return OPiece;
     }
 }
+class ClickBox {
+    constructor(color, col, row) {
+        const geo = new THREE.PlaneGeometry(410,410);
+        const pieceMat = new THREE.MeshLambertMaterial({ color: color, opacity:0.5, transparent: true, side: THREE.DoubleSide });
+        const ClickBox = new THREE.Mesh(geo, pieceMat)
+        // ClickBox.rotation.z;
+        ClickBox.rotation.x = Math.PI * -0.5;
+        scene.add(ClickBox);
+        return ClickBox;
+    }
+}
+
+class ClickPiece {
+    constructor(col, row) {
+        let piece;
+
+        piece = new ClickBox(red);
+        piece.position.y = 951;
+
+        if (col == "A") {
+            piece.position.x = -483;
+        }
+        if (col == "B") {
+            piece.position.x = 0;
+        }
+        if (col == "C") {
+            piece.position.x = 483;
+        }
+        if (row == 1) {
+            piece.position.z = -483;
+        }
+        if (row == 2) {
+            piece.position.z = 0;
+        }
+        if (row == 3) {
+            piece.position.z = 483;
+        }
+        piece.name = "clickpiece";
+    }
+}
 
 class XPiece {
     constructor(size, color) {
@@ -186,7 +226,7 @@ function init() {
     // Attach the threeJS renderer to the HTML page
     document.body.appendChild(renderer.domElement);
 
-    // controls = new OrbitControls(camera, renderer.domElement);
+    controls = new OrbitControls(camera, renderer.domElement);
 
     window.addEventListener("resize", () => {
         renderer.setSize(window.innerWidth, window.innerHeight);
@@ -213,6 +253,7 @@ function init() {
 
     // Initializes the gamepieces, places them in their default positions, and returns an array of all of the game Pieces
     // var gamePieces = createPieces();
+    var clickPieces = createClickables();
 
     /*******************************************************************************************
      * This section deals with moving pieces around
@@ -230,7 +271,7 @@ function animate() {
     requestAnimationFrame(animate);
 
     // This updates orbit controls every frame
-    // controls.update();
+    controls.update();
 
     render();
 }
@@ -307,6 +348,27 @@ function createSkybox() {
 
     return new THREE.Mesh(skyboxGeo, skyboxMeshes);
 }
+
+
+/*******************************************************************************************
+ * Creates all of the Clickable Boxes and returns them in an array
+ ******************************************************************************************/
+ function createClickables() {
+    let size = 175;
+
+    let C1 = new ClickPiece("A", 1);
+    let C2 = new ClickPiece("A", 2);
+    let C3 = new ClickPiece("A", 3);
+    let C4 = new ClickPiece("B", 1);
+    let C5 = new ClickPiece("B", 2);
+    let C6 = new ClickPiece("B", 3);
+    let C7 = new ClickPiece("C", 1);
+    let C8 = new ClickPiece("C", 2);
+    let C9 = new ClickPiece("C", 3);
+
+    return [C1, C2, C3, C4, C5, C6, C7, C8, C9];
+}
+
 
 /*******************************************************************************************
  * Creates all of the game pieces and returns them in an array
