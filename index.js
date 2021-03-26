@@ -24,7 +24,7 @@ const marble = "./.resources/textures/Red_Marble_002_COLOR.jpg";
 const table = "./.resources/blender/table.obj";
 
 const pieceSize = 175;
-var playerOne = true;
+var playerSwitch = true;
 
 /*******************************************************************************************
  * Adds in artificial ground
@@ -343,12 +343,12 @@ function onClick(event) {
             r = 3;
         }
 
-        var piece = new GamePiece(playerOne, pieceSize, c, r);
+        var piece = new GamePiece(playerSwitch, pieceSize, c, r);
                 
-        if (playerOne == true) {
-            playerOne = false;
+        if (playerSwitch) {
+            playerSwitch = false;
         } else {
-            playerOne = true;
+            playerSwitch = true;
         }
     }
 }
@@ -375,6 +375,9 @@ function hover(event) {
         intersects[0].object.material.opacity = 0.5;
     }
 }
+
+
+
 
 init();
 animate();
