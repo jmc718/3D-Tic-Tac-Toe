@@ -5,18 +5,25 @@ import { OBJLoader } from "./three/examples/jsm/loaders/OBJLoader.js";
 var scene, camera, renderer;
 var controls;
 
-const raycaster = new THREE.Raycaster(); // This is used so THREE.js can detect where the mouse is hovering
+var time = new THREE.Clock();
+
+var raycaster = new THREE.Raycaster(); // This is used so THREE.js can detect where the mouse is hovering
 const mouse = new THREE.Vector2();
 
+var pickPosition;
+var pickHelper;
+var hoveredObject;
+
 var matrix = new THREE.Matrix4(); // Used in render() to move the gamepieces
-// matrix.identity();                       // Sets it to an identity matrix by default
 
 const red = 0xff0000;
 const skyColor = 0xffffff; // light blue
-const style = "three/examples/fonts/helvetiker_regular.typeface.json";
 const grass = "./.resources/textures/Grass_001_COLOR.jpg";
 const marble = "./.resources/textures/Red_Marble_002_COLOR.jpg";
 const table = "./.resources/blender/table.obj";
+
+const pieceSize = 175;
+var playerOne = true;
 
 class Ground {
     constructor(size, textureFile) {
@@ -61,26 +68,42 @@ class OPiece {
         const bottomG = new THREE.RingGeometry(0.5, 1, 100, 1, 0, 6.283185);
         const outerG = new THREE.CylinderGeometry(1, 1, 0.1, 100, 1, true, 0, 6.283185);
         const pieceMat = new THREE.MeshLambertMaterial({ color: color, specular: 0xffffff, side: THREE.DoubleSide });
-        const top = new THREE.Mesh(topG, pieceMat);
+        var top = new THREE.Mesh(topG, pieceMat);
         top.rotation.x = Math.PI * -0.5;
         top.position.y += 0.05;
-        const bottom = new THREE.Mesh(bottomG, pieceMat);
+        var bottom = new THREE.Mesh(bottomG, pieceMat);
         bottom.rotation.x = Math.PI * -0.5;
         bottom.position.y -= 0.05;
-        const out = new THREE.Mesh(outerG, pieceMat);
-        const inn = new THREE.Mesh(innerG, pieceMat);
-        const OPiece = new THREE.Group();
+        var out = new THREE.Mesh(outerG, pieceMat);
+        var inn = new THREE.Mesh(innerG, pieceMat);
+        var OPiece = new THREE.Group();
         OPiece.add(top, bottom, out, inn);
         OPiece.scale.set(size, size, size);
-        scene.add(OPiece);
         return OPiece;
     }
 }
+class XPiece {
+    constructor(size, color) {
+        const geo = new THREE.BoxGeometry(0.3, 1, 0.1, 1, 1, 1, 1);
+        const pieceMat = new THREE.MeshLambertMaterial({ color: color, specular: 0xffffff, side: THREE.DoubleSide });
+        var leftX = new THREE.Mesh(geo, pieceMat);
+        leftX.rotation.z = Math.PI / 2;
+        var rightX = new THREE.Mesh(geo, pieceMat);
+        leftX.rotation.z = -Math.PI / 2;
+        var XPiece = new THREE.Group();
+        XPiece.add(leftX, rightX);
+        XPiece.scale.set(size * 2, size * 2, size * 2);
+        XPiece.rotation.z += Math.PI / 4;
+        XPiece.rotation.x = Math.PI * -0.5;
+        return XPiece;
+    }
+}
 class ClickBox {
-    constructor(color, col, row) {
-        const geo = new THREE.PlaneGeometry(410,410);
-        const pieceMat = new THREE.MeshLambertMaterial({ color: color, opacity:0.5, transparent: true, side: THREE.DoubleSide });
-        const ClickBox = new THREE.Mesh(geo, pieceMat)
+    constructor(color) {
+        const geo = new THREE.PlaneGeometry(410, 410);
+        const pieceMat = new THREE.MeshLambertMaterial({ color: color, opacity: 0.0, transparent: true, side: THREE.DoubleSide });
+        var ClickBox = new THREE.Mesh(geo, pieceMat);
+        ClickBox.name = "clickbox";
         // ClickBox.rotation.z;
         ClickBox.rotation.x = Math.PI * -0.5;
         scene.add(ClickBox);
@@ -113,36 +136,17 @@ class ClickPiece {
         if (row == 3) {
             piece.position.z = 483;
         }
-        piece.name = "clickpiece";
-    }
-}
-
-class XPiece {
-    constructor(size, color) {
-        const geo = new THREE.BoxGeometry(0.3, 1, 0.1, 1, 1, 1, 1);
-        const pieceMat = new THREE.MeshLambertMaterial({ color: color, specular: 0xffffff, side: THREE.DoubleSide });
-        const leftX = new THREE.Mesh(geo, pieceMat);
-        leftX.rotation.z = Math.PI / 2;
-        const rightX = new THREE.Mesh(geo, pieceMat);
-        leftX.rotation.z = -Math.PI / 2;
-        const XPiece = new THREE.Group();
-        XPiece.add(leftX, rightX);
-        XPiece.scale.set(size * 2, size * 2, size * 2);
-        XPiece.rotation.z += Math.PI / 4;
-        XPiece.rotation.x = Math.PI * -0.5;
-        scene.add(XPiece);
-        return XPiece;
     }
 }
 
 class GamePiece {
-    constructor(shape, size, col, row) {
-        let piece;
-        if (shape == "O") {
+    constructor(isPlayerOne, size, col, row) {
+        var piece;
+        if (isPlayerOne == false) {
             piece = new OPiece(size, red);
             piece.position.y = 960;
         }
-        if (shape == "X") {
+        if (isPlayerOne == true) {
             piece = new XPiece(size, red);
             piece.position.y = 960;
         }
@@ -165,6 +169,8 @@ class GamePiece {
             piece.position.z = 483;
         }
         piece.name = "gamepiece";
+        scene.add(piece);
+        return piece;
     }
 }
 
@@ -187,17 +193,148 @@ class Lighting {
 
 class PickHelper {
     constructor() {
+        this.raycaster = new THREE.Raycaster();
         this.pickedObject = null;
-        this.pickedObjectSavedColor = 0;
+        this.pickedOpacity = 0.0;
+        this.pickedObjectSavedOpacity = 0.0;
     }
+    pick(normalizedPosition, scene, camera) {
+        // restore the color if there is a picked object
+        if (this.pickedObject && this.pickedObject.material.name == "clickbox") {
+            this.pickedObject.material.opacity = this.pickedObjectSavedOpacity;
+            this.pickedObject = undefined;
+        }
 
-    pick(normalizedPosition, scene, camEnumerator, time) {
-        raycaster.setFromCamera(normalizedPosition, camera);
-
-        const intersectedObjects = raycaster.intersectObjects(scene.children);
+        // cast a ray through the frustum
+        this.raycaster.setFromCamera(normalizedPosition, camera);
+        // get the list of objects the ray intersected
+        const intersectedObjects = this.raycaster.intersectObjects(scene.children);
         if (intersectedObjects.length) {
             this.pickedObject = intersectedObjects[0].object;
+            if (this.pickedObject.material.name == "clickbox") {
+                this.pickedObjectSavedOpacity = this.pickedObject.material.opacity;
+                this.pickedObject.material.opacity = 0.5;
+            }
         }
+    }
+}
+
+/*******************************************************************************************
+ * Creates and returns the skybox
+ ******************************************************************************************/
+function createSkybox() {
+    const positiveX = new THREE.TextureLoader().load(".resources/textures/field-skyboxes/Meadow/posx.jpg");
+    const positiveY = new THREE.TextureLoader().load(".resources/textures/field-skyboxes/Meadow/posy.jpg");
+    const positiveZ = new THREE.TextureLoader().load(".resources/textures/field-skyboxes/Meadow/posz.jpg");
+    const negativeX = new THREE.TextureLoader().load(".resources/textures/field-skyboxes/Meadow/negx.jpg");
+    const negativeY = new THREE.TextureLoader().load(".resources/textures/field-skyboxes/Meadow/negy.jpg");
+    const negativeZ = new THREE.TextureLoader().load(".resources/textures/field-skyboxes/Meadow/negz.jpg");
+
+    // Puts all of the loaded textures into an array
+    const skyboxTextures = [positiveX, negativeX, positiveY, negativeY, positiveZ, negativeZ];
+
+    // Takes all of the textures from the array above and converts it into
+    // an array of meshes that only show up on the inside
+    const skyboxMeshes = skyboxTextures.map((texture) => {
+        return new THREE.MeshBasicMaterial({
+            map: texture,
+            side: THREE.BackSide,
+        });
+    });
+
+    const skyboxGeo = new THREE.BoxGeometry(10000, 10000, 10000);
+    skyboxGeo.applyMatrix4(new THREE.Matrix4().makeTranslation(0, 2000, 0));
+
+    return new THREE.Mesh(skyboxGeo, skyboxMeshes);
+}
+
+/*******************************************************************************************
+ * Creates all of the Clickable Boxes and returns them in an array
+ ******************************************************************************************/
+function createClickables() {
+    let C1 = new ClickPiece("A", 1);
+    let C2 = new ClickPiece("A", 2);
+    let C3 = new ClickPiece("A", 3);
+    let C4 = new ClickPiece("B", 1);
+    let C5 = new ClickPiece("B", 2);
+    let C6 = new ClickPiece("B", 3);
+    let C7 = new ClickPiece("C", 1);
+    let C8 = new ClickPiece("C", 2);
+    let C9 = new ClickPiece("C", 3);
+
+    return [C1, C2, C3, C4, C5, C6, C7, C8, C9];
+}
+
+/*******************************************************************************************
+ * Handles clicking down on gamepieces
+ ******************************************************************************************/
+function getCanvasRelativePosition(event) {
+    const rect = canvas.getBoundingClientRect();
+    return {
+        x: ((event.clientX - rect.left) * canvas.width) / rect.width,
+        y: ((event.clientY - rect.top) * canvas.height) / rect.height,
+    };
+}
+
+function onClick(event) {
+    event.preventDefault();
+
+    mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
+    mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
+
+    raycaster.setFromCamera(mouse, camera);
+
+    var intersects = raycaster.intersectObjects(scene.children, true);
+
+    if (intersects[0].object.name === "clickbox") {
+        console.log("Intersected with a clickbox");
+        let r;
+        let c;
+        let position = intersects[0].object.position;
+        if (position.x < 0) {
+            c = "A";
+        }
+        if (position.x == 0) {
+            c = "B";
+        }
+        if (position.x > 0) {
+            c = "C";
+        }
+        if (position.z < 0) {
+            r = 1;
+        }
+        if (position.z == 0) {
+            r = 2;
+        }
+        if (position.z > 0) {
+            r = 3;
+        }
+        var piece = new GamePiece(playerOne, pieceSize, c, r);
+        if (playerOne == true) {
+            playerOne = false;
+        } else {
+            playerOne = true;
+        }
+    }
+}
+
+function hover(event) {
+    event.preventDefault();
+
+    mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
+    mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
+
+    raycaster.setFromCamera(mouse, camera);
+
+    var intersects = raycaster.intersectObjects(scene.children, true);
+
+    if (hoveredObject != null && hoveredObject.name == "clickbox") {
+        hoveredObject.material.opacity = 0.0;
+        hoveredObject = null;
+    }
+    if (intersects[0].object.name == "clickbox") {
+        hoveredObject = intersects[0].object;
+        intersects[0].object.material.opacity = 0.5;
     }
 }
 
@@ -226,7 +363,7 @@ function init() {
     // Attach the threeJS renderer to the HTML page
     document.body.appendChild(renderer.domElement);
 
-    controls = new OrbitControls(camera, renderer.domElement);
+    // controls = new OrbitControls(camera, renderer.domElement);
 
     window.addEventListener("resize", () => {
         renderer.setSize(window.innerWidth, window.innerHeight);
@@ -251,15 +388,11 @@ function init() {
     // let ground = new Ground(8000, grass);
     let board = new Table(350, table, marble);
 
-    // Initializes the gamepieces, places them in their default positions, and returns an array of all of the game Pieces
-    // var gamePieces = createPieces();
-    var clickPieces = createClickables();
+    pickPosition = { x: 0, y: 0 };
+    pickHelper = new PickHelper();
 
-    /*******************************************************************************************
-     * This section deals with moving pieces around
-     ******************************************************************************************/
-    document.addEventListener("mousemove", onDocumentMouseMove, false);
-    document.addEventListener("mousedown", onDocumentMouseDown, false);
+    // Initializes the gamepieces, places them in their default positions, and returns an array of all of the game Pieces
+    var clickPieces = createClickables();
 }
 // End script
 
@@ -268,123 +401,15 @@ function init() {
  * It is called ~60 times a second
  ******************************************************************************************/
 function animate() {
-    requestAnimationFrame(animate);
-
     // This updates orbit controls every frame
-    controls.update();
+    // controls.update();
 
-    render();
-}
+    pickHelper.pick(pickPosition, scene, camera);
 
-/*******************************************************************************************
- * Renders everything onto the screen
- ******************************************************************************************/
-function render() {
-    // Starts the ray from where the mouse is
-    raycaster.setFromCamera(mouse, camera);
-
-    // returns an array of all objects inside the scene that intersects with the mouse.
-    const intersects = raycaster.intersectObjects(scene.children);
-
-    // Checks the first thing that the mouse intersected (the closest one),
-    //and highlights it if it can
-    if (intersects.length > 0) {
-        if (intersects[0].object.type == "Group") intersects[0].object.translateY(500);
-    }
-    matrix.identity();
+    window.addEventListener("mousemove", hover, false);
+    window.addEventListener("click", onClick, false);
 
     renderer.render(scene, camera);
-}
 
-/*******************************************************************************************
- * Handles clicking down on gamepieces
- ******************************************************************************************/
-function onDocumentMouseDown(event) {
-    event.preventDefault();
-
-    // mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
-    // mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
-
-    // matrix.makeTranslation(mouse.x * 10, mouse.y * 10, 0);
-}
-
-/*******************************************************************************************
- * Updates where the mouse is
- ******************************************************************************************/
-function onDocumentMouseMove(event) {
-    event.preventDefault();
-
-    mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
-    mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
-
-    // matrix.makeTranslation(mouse.x * 10, mouse.y * 10, 0);
-}
-
-/*******************************************************************************************
- * Creates and returns the skybox
- ******************************************************************************************/
-function createSkybox() {
-    const positiveX = new THREE.TextureLoader().load(".resources/textures/field-skyboxes/Meadow/posx.jpg");
-    const positiveY = new THREE.TextureLoader().load(".resources/textures/field-skyboxes/Meadow/posy.jpg");
-    const positiveZ = new THREE.TextureLoader().load(".resources/textures/field-skyboxes/Meadow/posz.jpg");
-    const negativeX = new THREE.TextureLoader().load(".resources/textures/field-skyboxes/Meadow/negx.jpg");
-    const negativeY = new THREE.TextureLoader().load(".resources/textures/field-skyboxes/Meadow/negy.jpg");
-    const negativeZ = new THREE.TextureLoader().load(".resources/textures/field-skyboxes/Meadow/negz.jpg");
-
-    // Puts all of the loaded textures into an array
-    const skyboxTextures = [positiveX, negativeX, positiveY, negativeY, positiveZ, negativeZ];
-
-    // Takes all of the textures from the array above and converts it into
-    // an array of meshes that only show up on the inside
-    const skyboxMeshes = skyboxTextures.map((texture) => {
-        return new THREE.MeshBasicMaterial({
-            map: texture,
-            side: THREE.BackSide,
-        });
-    });
-
-    const skyboxGeo = new THREE.BoxGeometry(10000, 10000, 10000);
-    skyboxGeo.applyMatrix(new THREE.Matrix4().makeTranslation(0, 2000, 0));
-
-    return new THREE.Mesh(skyboxGeo, skyboxMeshes);
-}
-
-
-/*******************************************************************************************
- * Creates all of the Clickable Boxes and returns them in an array
- ******************************************************************************************/
- function createClickables() {
-    let size = 175;
-
-    let C1 = new ClickPiece("A", 1);
-    let C2 = new ClickPiece("A", 2);
-    let C3 = new ClickPiece("A", 3);
-    let C4 = new ClickPiece("B", 1);
-    let C5 = new ClickPiece("B", 2);
-    let C6 = new ClickPiece("B", 3);
-    let C7 = new ClickPiece("C", 1);
-    let C8 = new ClickPiece("C", 2);
-    let C9 = new ClickPiece("C", 3);
-
-    return [C1, C2, C3, C4, C5, C6, C7, C8, C9];
-}
-
-
-/*******************************************************************************************
- * Creates all of the game pieces and returns them in an array
- ******************************************************************************************/
-function createPieces() {
-    let size = 175;
-
-    let X1 = new GamePiece("X", size, "A", 1);
-    let X2 = new GamePiece("O", size, "A", 2);
-    let X3 = new GamePiece("O", size, "A", 3);
-    let X4 = new GamePiece("O", size, "B", 1);
-    let X5 = new GamePiece("X", size, "B", 2);
-    let X6 = new GamePiece("O", size, "B", 3);
-    let X7 = new GamePiece("O", size, "C", 1);
-    let X8 = new GamePiece("O", size, "C", 2);
-    let X9 = new GamePiece("O", size, "C", 3);
-
-    return [X1, X2, X3, X4, X5, X6, X7, X8, X9];
+    requestAnimationFrame(animate);
 }
