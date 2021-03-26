@@ -400,8 +400,6 @@ function hover(event) {
 }
 
 
-
-
 init();
 animate();
 
@@ -427,7 +425,7 @@ function init() {
     // Attach the threeJS renderer to the HTML page
     document.body.appendChild(renderer.domElement);
 
-    // controls = new OrbitControls(camera, renderer.domElement);
+    controls = new OrbitControls(camera, renderer.domElement);
 
     window.addEventListener("resize", () => {
         renderer.setSize(window.innerWidth, window.innerHeight);
@@ -466,7 +464,7 @@ function init() {
  ******************************************************************************************/
 function animate() {
     // This updates orbit controls every frame
-    // controls.update();
+    controls.update();
 
     pickHelper.pick(pickPosition, scene, camera);
 
