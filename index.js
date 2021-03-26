@@ -15,7 +15,6 @@ var pickPosition;
 var pickHelper;
 var hoveredObject;
 
-var matrix = new THREE.Matrix4(); // Used in render() to move the gamepieces
 
 const red = 0xff0000;
 const skyColor = 0xffffff; // light blue
@@ -25,6 +24,7 @@ const table = "./.resources/blender/table.obj";
 
 const pieceSize = 175;
 var playerSwitch = true;
+var gamePieceArray = [];
 
 /*******************************************************************************************
  * Adds in artificial ground
@@ -119,16 +119,15 @@ class ClickBox {
  * Unofficial Parent of the X & O pieces
  ******************************************************************************************/
 class GamePiece {
-    constructor(isPlayerOne, size, col, row) {
-        var piece;
-        if (isPlayerOne == false) {
-            piece = new OPiece(size, red);
-            piece.position.y = 960;
-        }
-        if (isPlayerOne == true) {
-            piece = new XPiece(size, red);
-            piece.position.y = 960;
-        }
+    // constructor(isPlayerOne, size, col, row) {
+    constructor(col, row) {
+        this.location = {
+            col,
+            row
+        };
+    }
+
+    place(piece, col, row){
         if (col == "A") {
             piece.position.x = -483;
         }
@@ -147,54 +146,78 @@ class GamePiece {
         if (row == 3) {
             piece.position.z = 483;
         }
-        piece.name = "gamepiece";
-        scene.add(piece);
-        return piece;
     }
 }
 
 /*******************************************************************************************
  * Class for the X Pieces
  ******************************************************************************************/
-class XPiece {
-    constructor(size, color) {
+class XPiece extends GamePiece{
+    constructor(col, row, size = 175, color = red) {
+
+        super(col, row);
+
         const geo = new THREE.BoxGeometry(0.3, 1, 0.1, 1, 1, 1, 1);
         const pieceMat = new THREE.MeshLambertMaterial({ color: color, side: THREE.DoubleSide });
+        
         var leftX = new THREE.Mesh(geo, pieceMat);
         leftX.rotation.z = Math.PI / 2;
+        
         var rightX = new THREE.Mesh(geo, pieceMat);
         leftX.rotation.z = -Math.PI / 2;
-        var XPiece = new THREE.Group();
-        XPiece.add(leftX, rightX);
-        XPiece.scale.set(size * 2, size * 2, size * 2);
-        XPiece.rotation.z += Math.PI / 4;
-        XPiece.rotation.x = Math.PI * -0.5;
-        return XPiece;
+        
+        var piece = new THREE.Group();
+        piece.position.y = 960;
+        piece.add(leftX, rightX);
+        piece.scale.set(size * 2, size * 2, size * 2);
+        piece.rotation.z += Math.PI / 4;
+        piece.rotation.x = Math.PI * -0.5;
+        
+        this.place(piece, col, row);
+        
+        piece.name = "opiece";
+
+        scene.add(piece);
+        return piece;
     }
 }
 
 /*******************************************************************************************
  * Class for the O Pieces
  ******************************************************************************************/
-class OPiece {
-    constructor(size, color) {
+class OPiece extends GamePiece{
+    constructor(col, row, size = 175, color = red) {
+
+        super(col, row);
+
         const innerG = new THREE.CylinderGeometry(0.5, 0.5, 0.1, 100, 1, true, 0, 6.283185);
         const topG = new THREE.RingGeometry(0.5, 1, 100, 1, 0, 6.283185);
         const bottomG = new THREE.RingGeometry(0.5, 1, 100, 1, 0, 6.283185);
         const outerG = new THREE.CylinderGeometry(1, 1, 0.1, 100, 1, true, 0, 6.283185);
         const pieceMat = new THREE.MeshLambertMaterial({ color: color, side: THREE.DoubleSide });
+        
         var top = new THREE.Mesh(topG, pieceMat);
         top.rotation.x = Math.PI * -0.5;
         top.position.y += 0.05;
+        
         var bottom = new THREE.Mesh(bottomG, pieceMat);
         bottom.rotation.x = Math.PI * -0.5;
         bottom.position.y -= 0.05;
+        
         var out = new THREE.Mesh(outerG, pieceMat);
         var inn = new THREE.Mesh(innerG, pieceMat);
-        var OPiece = new THREE.Group();
-        OPiece.add(top, bottom, out, inn);
-        OPiece.scale.set(size, size, size);
-        return OPiece;
+        
+        var piece = new THREE.Group();
+        piece.position.y = 960;
+        piece.add(top, bottom, out, inn);
+        piece.scale.set(size, size, size);
+        
+        this.place(piece, col, row);
+
+        piece.name = "xpiece";
+
+        scene.add(piece);
+        return piece;
     }
 }
 
@@ -342,12 +365,12 @@ function onClick(event) {
         if (position.z > 0) {
             r = 3;
         }
-
-        var piece = new GamePiece(playerSwitch, pieceSize, c, r);
                 
         if (playerSwitch) {
+            gamePieceArray.push(new XPiece(c, r));
             playerSwitch = false;
         } else {
+            gamePieceArray.push(new OPiece(c, r));
             playerSwitch = true;
         }
     }
