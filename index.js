@@ -363,7 +363,7 @@ function init() {
     // Attach the threeJS renderer to the HTML page
     document.body.appendChild(renderer.domElement);
 
-    // controls = new OrbitControls(camera, renderer.domElement);
+    controls = new OrbitControls(camera, renderer.domElement);
 
     window.addEventListener("resize", () => {
         renderer.setSize(window.innerWidth, window.innerHeight);
@@ -393,6 +393,10 @@ function init() {
 
     // Initializes the gamepieces, places them in their default positions, and returns an array of all of the game Pieces
     var clickPieces = createClickables();
+
+    // Used for Three.js Inspector
+    window.scene = scene;
+    window.THREE = THREE;
 }
 // End script
 
@@ -402,7 +406,7 @@ function init() {
  ******************************************************************************************/
 function animate() {
     // This updates orbit controls every frame
-    // controls.update();
+    controls.update();
 
     pickHelper.pick(pickPosition, scene, camera);
 
