@@ -2,6 +2,7 @@ import * as THREE from "./three/build/three.module.js";
 import { OrbitControls } from "./three/examples/jsm/controls/OrbitControls.js";
 import { OBJLoader } from "./three/examples/jsm/loaders/OBJLoader.js";
 
+
 var scene, camera, renderer;
 var controls;
 
@@ -14,7 +15,6 @@ var pickPosition;
 var pickHelper;
 var hoveredObject;
 
-var matrix = new THREE.Matrix4(); // Used in render() to move the gamepieces
 
 const red = 0xff0000;
 const skyColor = 0xffffff; // light blue
@@ -23,8 +23,12 @@ const marble = "./.resources/textures/Red_Marble_002_COLOR.jpg";
 const table = "./.resources/blender/table.obj";
 
 const pieceSize = 175;
-var playerOne = true;
+var playerSwitch = true;
+var gamePieceArray = [];
 
+/*******************************************************************************************
+ * Adds in artificial ground
+ ******************************************************************************************/
 class Ground {
     constructor(size, textureFile) {
         const texture = new THREE.TextureLoader().load(textureFile);
@@ -43,6 +47,9 @@ class Ground {
     }
 }
 
+/*******************************************************************************************
+ * Imports the table
+ ******************************************************************************************/
 class Table {
     constructor(size, objectFile, textureFile) {
         const texture = new THREE.TextureLoader().load(textureFile);
@@ -61,56 +68,9 @@ class Table {
     }
 }
 
-class OPiece {
-    constructor(size, color) {
-        const innerG = new THREE.CylinderGeometry(0.5, 0.5, 0.1, 100, 1, true, 0, 6.283185);
-        const topG = new THREE.RingGeometry(0.5, 1, 100, 1, 0, 6.283185);
-        const bottomG = new THREE.RingGeometry(0.5, 1, 100, 1, 0, 6.283185);
-        const outerG = new THREE.CylinderGeometry(1, 1, 0.1, 100, 1, true, 0, 6.283185);
-        const pieceMat = new THREE.MeshLambertMaterial({ color: color, specular: 0xffffff, side: THREE.DoubleSide });
-        var top = new THREE.Mesh(topG, pieceMat);
-        top.rotation.x = Math.PI * -0.5;
-        top.position.y += 0.05;
-        var bottom = new THREE.Mesh(bottomG, pieceMat);
-        bottom.rotation.x = Math.PI * -0.5;
-        bottom.position.y -= 0.05;
-        var out = new THREE.Mesh(outerG, pieceMat);
-        var inn = new THREE.Mesh(innerG, pieceMat);
-        var OPiece = new THREE.Group();
-        OPiece.add(top, bottom, out, inn);
-        OPiece.scale.set(size, size, size);
-        return OPiece;
-    }
-}
-class XPiece {
-    constructor(size, color) {
-        const geo = new THREE.BoxGeometry(0.3, 1, 0.1, 1, 1, 1, 1);
-        const pieceMat = new THREE.MeshLambertMaterial({ color: color, specular: 0xffffff, side: THREE.DoubleSide });
-        var leftX = new THREE.Mesh(geo, pieceMat);
-        leftX.rotation.z = Math.PI / 2;
-        var rightX = new THREE.Mesh(geo, pieceMat);
-        leftX.rotation.z = -Math.PI / 2;
-        var XPiece = new THREE.Group();
-        XPiece.add(leftX, rightX);
-        XPiece.scale.set(size * 2, size * 2, size * 2);
-        XPiece.rotation.z += Math.PI / 4;
-        XPiece.rotation.x = Math.PI * -0.5;
-        return XPiece;
-    }
-}
-class ClickBox {
-    constructor(color) {
-        const geo = new THREE.PlaneGeometry(410, 410);
-        const pieceMat = new THREE.MeshLambertMaterial({ color: color, opacity: 0.0, transparent: true, side: THREE.DoubleSide });
-        var ClickBox = new THREE.Mesh(geo, pieceMat);
-        ClickBox.name = "clickbox";
-        // ClickBox.rotation.z;
-        ClickBox.rotation.x = Math.PI * -0.5;
-        scene.add(ClickBox);
-        return ClickBox;
-    }
-}
-
+/*******************************************************************************************
+ * Handles the location for the clickBoxes
+ ******************************************************************************************/
 class ClickPiece {
     constructor(col, row) {
         let piece;
@@ -139,17 +99,35 @@ class ClickPiece {
     }
 }
 
+/*******************************************************************************************
+ * Implements the ClickBoxes
+ ******************************************************************************************/
+class ClickBox {
+    constructor(color) {
+        const geo = new THREE.PlaneGeometry(410, 410);
+        const pieceMat = new THREE.MeshLambertMaterial({ color: color, opacity: 0.0, transparent: true, side: THREE.DoubleSide });
+        var ClickBox = new THREE.Mesh(geo, pieceMat);
+        ClickBox.name = "clickbox";
+        // ClickBox.rotation.z;
+        ClickBox.rotation.x = Math.PI * -0.5;
+        scene.add(ClickBox);
+        return ClickBox;
+    }
+}
+
+/*******************************************************************************************
+ * Unofficial Parent of the X & O pieces
+ ******************************************************************************************/
 class GamePiece {
-    constructor(isPlayerOne, size, col, row) {
-        var piece;
-        if (isPlayerOne == false) {
-            piece = new OPiece(size, red);
-            piece.position.y = 960;
-        }
-        if (isPlayerOne == true) {
-            piece = new XPiece(size, red);
-            piece.position.y = 960;
-        }
+    // constructor(isPlayerOne, size, col, row) {
+    constructor(col, row) {
+        this.location = {
+            col,
+            row
+        };
+    }
+
+    place(piece, col, row){
         if (col == "A") {
             piece.position.x = -483;
         }
@@ -168,12 +146,84 @@ class GamePiece {
         if (row == 3) {
             piece.position.z = 483;
         }
-        piece.name = "gamepiece";
+    }
+}
+
+/*******************************************************************************************
+ * Class for the X Pieces
+ ******************************************************************************************/
+class XPiece extends GamePiece{
+    constructor(col, row, size = 175, color = red) {
+
+        super(col, row);
+
+        const geo = new THREE.BoxGeometry(0.3, 1, 0.1, 1, 1, 1, 1);
+        const pieceMat = new THREE.MeshLambertMaterial({ color: color, side: THREE.DoubleSide });
+        
+        var leftX = new THREE.Mesh(geo, pieceMat);
+        leftX.rotation.z = Math.PI / 2;
+        
+        var rightX = new THREE.Mesh(geo, pieceMat);
+        leftX.rotation.z = -Math.PI / 2;
+        
+        var piece = new THREE.Group();
+        piece.position.y = 960;
+        piece.add(leftX, rightX);
+        piece.scale.set(size * 2, size * 2, size * 2);
+        piece.rotation.z += Math.PI / 4;
+        piece.rotation.x = Math.PI * -0.5;
+        
+        this.place(piece, col, row);
+        
+        piece.name = "opiece";
+
         scene.add(piece);
         return piece;
     }
 }
 
+/*******************************************************************************************
+ * Class for the O Pieces
+ ******************************************************************************************/
+class OPiece extends GamePiece{
+    constructor(col, row, size = 175, color = red) {
+
+        super(col, row);
+
+        const innerG = new THREE.CylinderGeometry(0.5, 0.5, 0.1, 100, 1, true, 0, 6.283185);
+        const topG = new THREE.RingGeometry(0.5, 1, 100, 1, 0, 6.283185);
+        const bottomG = new THREE.RingGeometry(0.5, 1, 100, 1, 0, 6.283185);
+        const outerG = new THREE.CylinderGeometry(1, 1, 0.1, 100, 1, true, 0, 6.283185);
+        const pieceMat = new THREE.MeshLambertMaterial({ color: color, side: THREE.DoubleSide });
+        
+        var top = new THREE.Mesh(topG, pieceMat);
+        top.rotation.x = Math.PI * -0.5;
+        top.position.y += 0.05;
+        
+        var bottom = new THREE.Mesh(bottomG, pieceMat);
+        bottom.rotation.x = Math.PI * -0.5;
+        bottom.position.y -= 0.05;
+        
+        var out = new THREE.Mesh(outerG, pieceMat);
+        var inn = new THREE.Mesh(innerG, pieceMat);
+        
+        var piece = new THREE.Group();
+        piece.position.y = 960;
+        piece.add(top, bottom, out, inn);
+        piece.scale.set(size, size, size);
+        
+        this.place(piece, col, row);
+
+        piece.name = "xpiece";
+
+        scene.add(piece);
+        return piece;
+    }
+}
+
+/*******************************************************************************************
+ * Handles the lighting for the game
+ ******************************************************************************************/
 class Lighting {
     constructor() {
         // Add Directional Light
@@ -191,6 +241,9 @@ class Lighting {
     }
 }
 
+/*******************************************************************************************
+ * Handles the raycasting
+ ******************************************************************************************/
 class PickHelper {
     constructor() {
         this.raycaster = new THREE.Raycaster();
@@ -268,14 +321,17 @@ function createClickables() {
 /*******************************************************************************************
  * Handles clicking down on gamepieces
  ******************************************************************************************/
-function getCanvasRelativePosition(event) {
-    const rect = canvas.getBoundingClientRect();
-    return {
-        x: ((event.clientX - rect.left) * canvas.width) / rect.width,
-        y: ((event.clientY - rect.top) * canvas.height) / rect.height,
-    };
-}
+// function getCanvasRelativePosition(event) {
+//     const rect = canvas.getBoundingClientRect();
+//     return {
+//         x: ((event.clientX - rect.left) * canvas.width) / rect.width,
+//         y: ((event.clientY - rect.top) * canvas.height) / rect.height,
+//     };
+// }
 
+/*******************************************************************************************
+ * Handles what happens when you click on a valid location for a piece
+ ******************************************************************************************/
 function onClick(event) {
     event.preventDefault();
 
@@ -287,7 +343,7 @@ function onClick(event) {
     var intersects = raycaster.intersectObjects(scene.children, true);
 
     if (intersects[0].object.name === "clickbox") {
-        console.log("Intersected with a clickbox");
+        // console.log("Intersected with a clickbox");
         let r;
         let c;
         let position = intersects[0].object.position;
@@ -309,15 +365,20 @@ function onClick(event) {
         if (position.z > 0) {
             r = 3;
         }
-        var piece = new GamePiece(playerOne, pieceSize, c, r);
-        if (playerOne == true) {
-            playerOne = false;
+                
+        if (playerSwitch) {
+            gamePieceArray.push(new XPiece(c, r));
+            playerSwitch = false;
         } else {
-            playerOne = true;
+            gamePieceArray.push(new OPiece(c, r));
+            playerSwitch = true;
         }
     }
 }
 
+/*******************************************************************************************
+ * Handles what happens when you hover over a valid location for a piece
+ ******************************************************************************************/
 function hover(event) {
     event.preventDefault();
 
@@ -337,6 +398,7 @@ function hover(event) {
         intersects[0].object.material.opacity = 0.5;
     }
 }
+
 
 init();
 animate();
