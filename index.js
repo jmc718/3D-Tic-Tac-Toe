@@ -155,7 +155,7 @@ class XPiece extends GamePiece {
         leftX.rotation.z = -Math.PI / 2;
 
         var piece = new THREE.Group();
-        piece.position.y = 960;
+        piece.position.y = 2560;
         piece.add(leftX, rightX);
         piece.scale.set(size * 2, size * 2, size * 2);
         piece.rotation.z += Math.PI / 4;
@@ -200,7 +200,7 @@ class OPiece extends GamePiece {
         var inn = new THREE.Mesh(innerG, pieceMat);
 
         var piece = new THREE.Group();
-        piece.position.y = 960;
+        piece.position.y = 2560;
         piece.add(top, bottom, out, inn);
         piece.scale.set(size, size, size);
 
@@ -478,6 +478,23 @@ function init() {
 function animate() {
     // This updates orbit controls every frame
     controls.update();
+
+
+    // This allows the pieces to drop down. The X and O pieces start out higher than their original
+    // position of 960 now.
+    // If you change the speed, be sure it is a clean divisor of the starting y position minus 960
+    // For example, right now it's 2560 - 960 which equals 1600. The speed of 200 divides cleanly into
+    // 1600, meaning it will end nicely on 960 instead of some other weird position
+    var i;
+    for (i = 0; i < gamePieceArray.length; i++) {
+
+        if (gamePieceArray[i].position.y > 960) {
+
+            gamePieceArray[i].position.y -= 200;
+
+        }
+    }
+
 
     pickHelper.pick(pickPosition, scene, camera);
 
