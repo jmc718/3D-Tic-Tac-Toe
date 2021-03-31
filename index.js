@@ -4,6 +4,10 @@ import { OBJLoader } from "./three/examples/jsm/loaders/OBJLoader.js";
 import { Audio } from "./three/src/audio/Audio.js";
 // import { GUI } from "./three/examples/jsm/libs/dat.gui.module.js";
 
+
+// ctrl + shift + i in the browser brings up developer tools & shows error messages
+
+
 function main() {
     const manager = new THREE.LoadingManager();
     manager.onLoad = init;
@@ -327,26 +331,10 @@ function main() {
     }
 
     /*******************************************************************************************
-     * Checks to see if a piece has already been placed in a certain spot
-     ******************************************************************************************/
-    function checkPiece(potentialPiece) {
-        const valid = gamePieceArray.find(
-            (placedPiece) => placedPiece.location.row === potentialPiece.location.row && placedPiece.location.col === potentialPiece.location.col
-        );
-
-        if (valid) {
-            console.log("Potential Piece is valid");
-            return true;
-        } else return false;
-    }
-
-    /*******************************************************************************************
      * Handles what happens when you click on a valid location for a piece
      ******************************************************************************************/
     function onClick(event) {
         event.preventDefault();
-
-
 
         mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
         mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
@@ -394,6 +382,10 @@ function main() {
                 sound.setVolume( 0.5 );
                 sound.play();
             });
+
+            // This stops the clickbox from being used again
+            intersects[0].object.name = "clickedbox";
+            intersects[0].object.material.opacity = 0;
         }
     }
 
@@ -486,8 +478,6 @@ function main() {
 
     init();
     animate();
-
-    // ctrl + shift + i in the browser brings up developer tools & shows error messages
 
     // Start Script
     function init() {
