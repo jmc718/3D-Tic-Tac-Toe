@@ -1,6 +1,7 @@
 import * as THREE from "./three/build/three.module.js";
 import { OrbitControls } from "./three/examples/jsm/controls/OrbitControls.js";
 import { OBJLoader } from "./three/examples/jsm/loaders/OBJLoader.js";
+import { Audio } from "./three/src/audio/Audio.js";
 // import { GUI } from "./three/examples/jsm/libs/dat.gui.module.js";
 
 function main() {
@@ -345,6 +346,8 @@ function main() {
     function onClick(event) {
         event.preventDefault();
 
+
+
         mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
         mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
 
@@ -382,6 +385,15 @@ function main() {
                 gamePieceArray.push(new OPiece(c, r));
                 playerSwitch = true;
             }
+            // load a sound and set it as the Audio object's buffer
+            const audioLoader = new THREE.AudioLoader();
+            audioLoader.load( './.resources/sound/piece_drop.wav', function( buffer ) {
+                sound.setBuffer( buffer );
+                sound.setLoop( false );
+                sound.isPlaying = false;
+                sound.setVolume( 0.5 );
+                sound.play();
+            });
         }
     }
 
@@ -452,6 +464,14 @@ function main() {
     // Initializes the gamepieces, places them in their default positions, and returns an array of all of the game Pieces
     clickBoxArray = createClickables();
 
+    // create an AudioListener and add it to the camera
+    const listener = new THREE.AudioListener();
+    camera.add( listener );
+
+    // create a global audio source
+    const sound = new THREE.Audio( listener );
+
+
     var pickPosition = { x: 0, y: 0 };
     var pickHelper = new PickHelper();
 
@@ -491,12 +511,12 @@ function main() {
         // This allows the pieces to drop down. The X and O pieces start out higher than their original
         // position of 960 now.
         // If you change the speed, be sure it is a clean divisor of the starting y position minus 960
-        // For example, right now it's 2560 - 960 which equals 1600. The speed of 200 divides cleanly into
+        // For example, right now it's 2560 - 960 which equals 1600. The speed of 400 divides cleanly into
         // 1600, meaning it will end nicely on 960 instead of some other weird position
         var i;
         for (i = 0; i < gamePieceArray.length; i++) {
             if (gamePieceArray[i].position.y > 960) {
-                gamePieceArray[i].position.y -= 200;
+                gamePieceArray[i].position.y -= 400;
             }
         }
 
