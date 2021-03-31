@@ -5,7 +5,24 @@
         <style>
             body {
                 margin: 0;
-                height: 100vh;
+                height: 1vh;
+                overflow: hidden;
+
+                /* style text */
+                text-align: center;
+                font-size: 12px;
+                font-family: Sans-Serif;
+
+                /* color text */
+                color: #444;
+            }
+            h1 {
+                /* position the heading */
+                position: absolute;
+                width: 100%;
+
+                /* make sure that the heading is drawn on top */
+                z-index: 1;
             }
             canvas {
                 display: block;
@@ -57,18 +74,32 @@
                     background-position: 0 0;
                 }
             }
+
+            #ui {
+                position: absolute;
+                left: 1em;
+                top: 1em;
+            }
+            #ui > div {
+                font-size: 20pt;
+                padding: 1em;
+                display: inline-block;
+            }
+            #ui > div.selected {
+                color: red;
+            }
         </style>
     </head>
     <body>
-        <canvas id="c">
-            <div id="ThreeJS" style="position: absolute; left: 0px; top: 0px"></div>
-            <script type="module" src="index.js"></script>
-            <div id="loading">
-                <div>
-                    <div>...loading...</div>
-                    <div class="progress"><div id="progressbar"></div></div>
-                </div>
+        <canvas id="c"></canvas>
+        <div id="ThreeJS" style="position: absolute; left: 0px; top: 0px"></div>
+        <script type="module" src="index.js"></script>
+        <div id="loading">
+            <div>
+                <div>...loading...</div>
+                <div class="progress"><div id="progressbar"></div></div>
             </div>
-        </canvas>
+        </div>
+        <div id="ui"></div>
     </body>
 </html>
