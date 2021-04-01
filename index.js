@@ -4,77 +4,76 @@ import { OBJLoader } from "./three/examples/jsm/loaders/OBJLoader.js";
 import { Audio } from "./three/src/audio/Audio.js";
 // import { GUI } from "./three/examples/jsm/libs/dat.gui.module.js";
 
-
 // ctrl + shift + i in the browser brings up developer tools & shows error messages
 
-
 function main() {
-    const manager = new THREE.LoadingManager();
-    manager.onLoad = init;
+    /*******************************************************************************************
+     * Adds all of the main parts of THREE.js, like the scene, camera, etc
+     ******************************************************************************************/
+    const canvas = document.querySelector("#c");
 
-    const progressbarElem = document.querySelector("#progressbar");
-    manager.onProgress = (itemsLoaded, itemsTotal) => {
-        progressbarElem.style.width = `${((itemsLoaded / itemsTotal) * 100) | 0}%`;
-    };
+    // The renderer renders the scene using the objects, lights and camera
+    const renderer = new THREE.WebGLRenderer({ canvas });
+    renderer.shadowMap.enabled = true;
+    renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+    renderer.setSize(window.innerWidth, window.innerHeight);
 
-    /* Loaders */
-    const textureLoader = new THREE.TextureLoader(manager);
-    const objectLoader = new OBJLoader(manager);
+    // Every scene needs a camera
+    const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 1, 15000);
+    camera.position.set(0, 2250, 750);
+    camera.lookAt(new THREE.Vector3(0, 960, 0));
 
-    var scene, camera, renderer;
-    var controls;
+    // Mouse controls to move camera
+    const controls = new OrbitControls(camera, canvas);
+    controls.target.set(0, 960, 0);
+    controls.update();
 
-    const time = new THREE.Clock();
+    // Create the main scene for the 3D drawing
+    const scene = new THREE.Scene();
+    scene.name = "scene";
 
     var raycaster = new THREE.Raycaster(); // This is used so THREE.js can detect where the mouse is hovering
     const mouse = new THREE.Vector2();
 
-    var hoveredObject;
-
     const red = 0xff0000;
     const skyColor = 0xffffff;
-    const grass = "./.resources/textures/Grass_001_COLOR.jpg";
-    const marble = textureLoader.load("./.resources/textures/Red_Marble_002_COLOR.jpg");
     const table = "./.resources/blender/table.obj";
 
-    /* Skybox texture */
-    const positiveX = textureLoader.load(".resources/textures/field-skyboxes/Meadow/posx.jpg");
-    const positiveY = textureLoader.load(".resources/textures/field-skyboxes/Meadow/posy.jpg");
-    const positiveZ = textureLoader.load(".resources/textures/field-skyboxes/Meadow/posz.jpg");
-    const negativeX = textureLoader.load(".resources/textures/field-skyboxes/Meadow/negx.jpg");
-    const negativeY = textureLoader.load(".resources/textures/field-skyboxes/Meadow/negy.jpg");
-    const negativeZ = textureLoader.load(".resources/textures/field-skyboxes/Meadow/negz.jpg");
+    window.addEventListener("resize", () => {
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        camera.aspect = window.innerWidth / window.innerHeight;
+        camera.updateProjectionMatrix();
+    });
+
+    const manager = new THREE.LoadingManager();
+    const progressbarElem = document.querySelector("#progressbar");
+    manager.onProgress = (url, itemsLoaded, itemsTotal) => {
+        progressbarElem.style.width = `${((itemsLoaded / itemsTotal) * 100) | 0}%`;
+    };
+    manager.onLoad = init;
+
+    /* Loaders */
+    const textureLoader = new THREE.TextureLoader(manager);
+    const objectLoader = new OBJLoader(manager);
+    const audioLoader = new THREE.AudioLoader(manager);
+
+    var hoveredObject;
+
+    const marble = textureLoader.load("./.resources/textures/Red_Marble_002_COLOR.jpg");
+
+    scene.background = new THREE.CubeTextureLoader()
+        .setPath(".resources/textures/field-skyboxes/Meadow/")
+        .load(["posx.jpg", "negx.jpg", "posy.jpg", "negy.jpg", "posz.jpg", "negz.jpg"]);
 
     const pieceSize = 175;
     var playerSwitch = true;
     var gamePieceArray = [];
-    var tableArray     = [
+    var tableArray = [
         [false, false, false],
         [false, false, false],
-        [false, false, false]
+        [false, false, false],
     ];
-    var clickBoxArray  = [];
-
-    /*******************************************************************************************
-     * Adds in artificial ground
-     ******************************************************************************************/
-    class Ground {
-        constructor(size) {
-            const texture = textureLoader.load(grass);
-            texture.wrapS = THREE.RepeatWrapping;
-            texture.wrapT = THREE.RepeatWrapping;
-            texture.repeat.set(4, 4);
-            const geometry = new THREE.PlaneGeometry(size, size);
-            const material = new THREE.MeshLambertMaterial({
-                map: texture,
-                side: THREE.DoubleSide,
-            });
-            this.mesh = new THREE.Mesh(geometry, material);
-            mesh.receiveShadow = true;
-            mesh.rotation.x = Math.PI * -0.5;
-            scene.add(mesh);
-        }
-    }
+    var clickBoxArray = [];
 
     /*******************************************************************************************
      * Imports the table object, applies the texture, and adds it to the scene.
@@ -118,47 +117,46 @@ function main() {
             }
             if (col == "A" && row == 2) {
                 piece.position.x = -483;
-                piece.position.z =    0;
+                piece.position.z = 0;
                 tableArray[1][0] = true;
             }
             if (col == "A" && row == 3) {
                 piece.position.x = -483;
-                piece.position.z =  483;
+                piece.position.z = 483;
                 tableArray[2][0] = true;
             }
 
             // Column B
             if (col == "B" && row == 1) {
-                piece.position.x =    0;
+                piece.position.x = 0;
                 piece.position.z = -483;
                 tableArray[0][1] = true;
             }
             if (col == "B" && row == 2) {
-                piece.position.x =    0;
-                piece.position.z =    0;
+                piece.position.x = 0;
+                piece.position.z = 0;
                 tableArray[1][1] = true;
             }
             if (col == "B" && row == 3) {
-                piece.position.x =    0;
-                piece.position.z =  483;
+                piece.position.x = 0;
+                piece.position.z = 483;
                 tableArray[2][1] = true;
-
             }
 
             // Column C
             if (col == "C" && row == 1) {
-                piece.position.x =  483;
+                piece.position.x = 483;
                 piece.position.z = -483;
                 tableArray[0][2] = true;
             }
             if (col == "C" && row == 2) {
-                piece.position.x =  483;
-                piece.position.z =    0;
+                piece.position.x = 483;
+                piece.position.z = 0;
                 tableArray[1][2] = true;
             }
             if (col == "C" && row == 3) {
-                piece.position.x =  483;
-                piece.position.z =  483;
+                piece.position.x = 483;
+                piece.position.z = 483;
                 tableArray[2][2] = true;
             }
         }
@@ -331,6 +329,20 @@ function main() {
     }
 
     /*******************************************************************************************
+     * Adjust the renderer size
+     ******************************************************************************************/
+    function resizeRendererToDisplaySize(renderer) {
+        const canvas = renderer.domElement;
+        const width = canvas.clientWidth;
+        const height = canvas.clientHeight;
+        const needResize = canvas.width !== width || canvas.height !== height;
+        if (needResize) {
+            renderer.setSize(width, height, false);
+        }
+        return needResize;
+    }
+
+    /*******************************************************************************************
      * Creates and returns the skybox
      ******************************************************************************************/
     function createSkybox() {
@@ -412,12 +424,11 @@ function main() {
                 playerSwitch = true;
             }
             // load a sound and set it as the Audio object's buffer
-            const audioLoader = new THREE.AudioLoader();
-            audioLoader.load( './.resources/sound/piece_drop.wav', function( buffer ) {
-                sound.setBuffer( buffer );
-                sound.setLoop( false );
+            audioLoader.load("./.resources/sound/piece_drop.wav", function (buffer) {
+                sound.setBuffer(buffer);
+                sound.setLoop(false);
                 sound.isPlaying = false;
-                sound.setVolume( 0.5 );
+                sound.setVolume(0.5);
                 sound.play();
             });
 
@@ -447,7 +458,7 @@ function main() {
             hoveredObject = null;
         }
         // if (intersects[0].object.name == "clickbox" && gamePieceArray.find((piece) => piece.getID() === intersects[0].object.id)) {
-        if (intersects[0].object.name == "clickbox") {
+        if (intersects.length != 0 && intersects[0].object.name == "clickbox") {
             hoveredObject = intersects[0].object;
             intersects[0].object.material.opacity = 0.5;
         }
@@ -456,57 +467,47 @@ function main() {
     /*******************************************************************************************
      * Resets the table array to be full of false
      ******************************************************************************************/
-    function resetTableArray(){
+    function resetTableArray() {
         tableArray = [
             [false, false, false],
             [false, false, false],
-            [false, false, false]
+            [false, false, false],
         ];
     }
 
     /*******************************************************************************************
-     * Return true if the game has been completed 
+     * Return true if the game has been completed
      ******************************************************************************************/
-    function checkGameCompleted(){
-        
+    function checkGameCompleted() {
         // Game can be won
-        if (gamePieceArray.length >= 3 && gamePieceArray.length < 9){
+        if (gamePieceArray.length >= 3 && gamePieceArray.length < 9) {
             /* Row 1 */
-            if (tableArray[0][0] && tableArray[0][1] && tableArray[0][2]){
-                
+            if (tableArray[0][0] && tableArray[0][1] && tableArray[0][2]) {
             }
             /* Row 2 */
-            if (tableArray[1][0] && tableArray[1][1] && tableArray[1][2]){
-                
+            if (tableArray[1][0] && tableArray[1][1] && tableArray[1][2]) {
             }
             /* Row 3 */
-            if (tableArray[2][0] && tableArray[2][1] && tableArray[2][2]){
-
+            if (tableArray[2][0] && tableArray[2][1] && tableArray[2][2]) {
             }
             /* Column A */
-            if (tableArray[0][0] && tableArray[1][0] && tableArray[2][0]){
-                
+            if (tableArray[0][0] && tableArray[1][0] && tableArray[2][0]) {
             }
             /* Column B */
-            if (tableArray[0][1] && tableArray[1][1] && tableArray[2][1]){
-                
+            if (tableArray[0][1] && tableArray[1][1] && tableArray[2][1]) {
             }
             /* Column C */
-            if (tableArray[0][2] && tableArray[1][2] && tableArray[2][2]){
-                
+            if (tableArray[0][2] && tableArray[1][2] && tableArray[2][2]) {
             }
             /* Top Left - Bottom Right */
-            if (tableArray[0][0] && tableArray[1][1] && tableArray[2][2]){
-               
+            if (tableArray[0][0] && tableArray[1][1] && tableArray[2][2]) {
             }
             /* Top Right - Bottom Left */
-            if (tableArray[0][2] && tableArray[1][1] && tableArray[2][0]){
-                
+            if (tableArray[0][2] && tableArray[1][1] && tableArray[2][0]) {
             }
         }
         // Game Over
-        else if (gamePieceArray.length == 9){
-    
+        else if (gamePieceArray.length == 9) {
             return true;
         }
 
@@ -514,43 +515,8 @@ function main() {
         return false;
     }
 
-    /*******************************************************************************************
-     * Adds all of the main parts of THREE.js, like the scene, camera, etc
-     ******************************************************************************************/
-    // Create the main scene for the 3D drawing
-    const canvas = document.querySelector("#c");
-    scene = new THREE.Scene();
-
-    // Every scene needs a camera
-    camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 1, 15000);
-
-    // the renderer renders the scene using the objects, lights and camera
-    renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
-    renderer.shadowMap.enabled = true;
-    renderer.shadowMap.type = THREE.PCFSoftShadowMap;
-    renderer.setSize(window.innerWidth, window.innerHeight);
-
-    // Attach the threeJS renderer to the HTML page
-    document.body.appendChild(renderer.domElement);
-
-    controls = new OrbitControls(camera, canvas);
-    controls.target.set(0, 960, 0);
-
-    window.addEventListener("resize", () => {
-        renderer.setSize(window.innerWidth, window.innerHeight);
-        camera.aspect = window.innerWidth / window.innerHeight;
-        camera.updateProjectionMatrix();
-    });
-
-    camera.position.set(0, 2250, 750);
-    camera.lookAt(new THREE.Vector3(0, 960, 0));
-
     const light = new Lighting();
     scene.add(light);
-
-    //Add Background scene
-    const skybox = createSkybox();
-    scene.add(skybox);
 
     const board = new Table(350, table);
 
@@ -562,14 +528,13 @@ function main() {
 
     // create an AudioListener and add it to the camera
     const listener = new THREE.AudioListener();
-    camera.add( listener );
+    camera.add(listener);
 
     // create a global audio source
-    const sound = new THREE.Audio( listener );
+    const sound = new THREE.Audio(listener);
 
-
-    var pickPosition = { x: 0, y: 0 };
-    var pickHelper = new PickHelper();
+    const pickPosition = { x: 0, y: 0 };
+    const pickHelper = new PickHelper();
 
     window.addEventListener("mousemove", hover, false);
     window.addEventListener("click", onClick, false);
@@ -607,21 +572,25 @@ function main() {
         // If you change the speed, be sure it is a clean divisor of the starting y position minus 960
         // For example, right now it's 2560 - 960 which equals 1600. The speed of 400 divides cleanly into
         // 1600, meaning it will end nicely on 960 instead of some other weird position
-        var i;
+        let i;
         for (i = 0; i < gamePieceArray.length; i++) {
             if (gamePieceArray[i].position.y > 960) {
                 gamePieceArray[i].position.y -= 400;
             }
         }
-
         pickHelper.pick(pickPosition, scene, camera);
-
         render();
     }
-
     function render() {
+        if (resizeRendererToDisplaySize(renderer)) {
+            const canvas = renderer.domElement;
+            camera.aspect = canvas.clientWidth / canvas.clientHeight;
+            camera.updateProjectionMatrix();
+        }
+
         renderer.render(scene, camera);
         requestAnimationFrame(animate);
     }
+    requestAnimationFrame(animate);
 }
 main();
