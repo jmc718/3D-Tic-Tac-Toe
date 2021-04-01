@@ -48,7 +48,12 @@ function main() {
     const pieceSize = 175;
     var playerSwitch = true;
     var gamePieceArray = [];
-    var clickBoxArray = [];
+    var tableArray     = [
+        [false, false, false],
+        [false, false, false],
+        [false, false, false]
+    ];
+    var clickBoxArray  = [];
 
     /*******************************************************************************************
      * Adds in artificial ground
@@ -105,23 +110,56 @@ function main() {
         }
 
         place(piece, col, row) {
-            if (col == "A") {
+            // Column A
+            if (col == "A" && row == 1) {
                 piece.position.x = -483;
-            }
-            if (col == "B") {
-                piece.position.x = 0;
-            }
-            if (col == "C") {
-                piece.position.x = 483;
-            }
-            if (row == 1) {
                 piece.position.z = -483;
+                tableArray[0][0] = true;
             }
-            if (row == 2) {
-                piece.position.z = 0;
+            if (col == "A" && row == 2) {
+                piece.position.x = -483;
+                piece.position.z =    0;
+                tableArray[1][0] = true;
             }
-            if (row == 3) {
-                piece.position.z = 483;
+            if (col == "A" && row == 3) {
+                piece.position.x = -483;
+                piece.position.z =  483;
+                tableArray[2][0] = true;
+            }
+
+            // Column B
+            if (col == "B" && row == 1) {
+                piece.position.x =    0;
+                piece.position.z = -483;
+                tableArray[0][1] = true;
+            }
+            if (col == "B" && row == 2) {
+                piece.position.x =    0;
+                piece.position.z =    0;
+                tableArray[1][1] = true;
+            }
+            if (col == "B" && row == 3) {
+                piece.position.x =    0;
+                piece.position.z =  483;
+                tableArray[2][1] = true;
+
+            }
+
+            // Column C
+            if (col == "C" && row == 1) {
+                piece.position.x =  483;
+                piece.position.z = -483;
+                tableArray[0][2] = true;
+            }
+            if (col == "C" && row == 2) {
+                piece.position.x =  483;
+                piece.position.z =    0;
+                tableArray[1][2] = true;
+            }
+            if (col == "C" && row == 3) {
+                piece.position.x =  483;
+                piece.position.z =  483;
+                tableArray[2][2] = true;
             }
         }
     }
@@ -386,6 +424,8 @@ function main() {
             // This stops the clickbox from being used again
             intersects[0].object.name = "clickedbox";
             intersects[0].object.material.opacity = 0;
+
+            checkGameCompleted();
         }
     }
 
@@ -411,6 +451,67 @@ function main() {
             hoveredObject = intersects[0].object;
             intersects[0].object.material.opacity = 0.5;
         }
+    }
+
+    /*******************************************************************************************
+     * Resets the table array to be full of false
+     ******************************************************************************************/
+    function resetTableArray(){
+        tableArray = [
+            [false, false, false],
+            [false, false, false],
+            [false, false, false]
+        ];
+    }
+
+    /*******************************************************************************************
+     * Return true if the game has been completed 
+     ******************************************************************************************/
+    function checkGameCompleted(){
+        
+        // Game can be won
+        if (gamePieceArray.length >= 3 && gamePieceArray.length < 9){
+            /* Row 1 */
+            if (tableArray[0][0] && tableArray[0][1] && tableArray[0][2]){
+                
+            }
+            /* Row 2 */
+            if (tableArray[1][0] && tableArray[1][1] && tableArray[1][2]){
+                
+            }
+            /* Row 3 */
+            if (tableArray[2][0] && tableArray[2][1] && tableArray[2][2]){
+
+            }
+            /* Column A */
+            if (tableArray[0][0] && tableArray[1][0] && tableArray[2][0]){
+                
+            }
+            /* Column B */
+            if (tableArray[0][1] && tableArray[1][1] && tableArray[2][1]){
+                
+            }
+            /* Column C */
+            if (tableArray[0][2] && tableArray[1][2] && tableArray[2][2]){
+                
+            }
+            /* Top Left - Bottom Right */
+            if (tableArray[0][0] && tableArray[1][1] && tableArray[2][2]){
+               
+            }
+            /* Top Right - Bottom Left */
+            if (tableArray[0][2] && tableArray[1][1] && tableArray[2][0]){
+                
+            }
+        }
+        // Game Over
+        else if (gamePieceArray.length == 9){
+    
+            return true;
+        }
+
+        // Default Case
+        return false;
     }
 
     /*******************************************************************************************
@@ -455,6 +556,9 @@ function main() {
 
     // Initializes the gamepieces, places them in their default positions, and returns an array of all of the game Pieces
     clickBoxArray = createClickables();
+
+    // Resets the table array because creating all of the clickboxes sets the every element to true
+    resetTableArray();
 
     // create an AudioListener and add it to the camera
     const listener = new THREE.AudioListener();
