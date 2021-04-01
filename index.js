@@ -104,11 +104,20 @@ function main() {
                 col,
                 row,
             };
-
             this.placed = false;
         }
 
         place(piece, col, row) {
+            /*
+                A   B   C
+              -------------
+            1 |   |   |   |
+              -------------
+            2 |   |   |   |
+              -------------
+            3 |   |   |   |
+              -------------
+            */
             // Column A
             if (col == "A" && row == 1) {
                 piece.position.x = -483;
@@ -479,39 +488,204 @@ function main() {
      * Return true if the game has been completed
      ******************************************************************************************/
     function checkGameCompleted() {
+        /*
+            A   B   C
+          -------------
+        1 |   |   |   |
+          -------------
+        2 |   |   |   |
+          -------------
+        3 |   |   |   |
+          -------------
+        */
         // Game can be won
+        let A1 = tableArray[0][0];
+        let B1 = tableArray[0][1];
+        let C1 = tableArray[0][2];
+        let A2 = tableArray[1][0];
+        let B2 = tableArray[1][1];
+        let C2 = tableArray[1][2];
+        let A3 = tableArray[2][0];
+        let B3 = tableArray[2][1];
+        let C3 = tableArray[2][2];
+
+        var a1 = "none";
+        var b1 = "none";
+        var c1 = "none";
+        var a2 = "none";
+        var b2 = "none";
+        var c2 = "none";
+        var a3 = "none";
+        var b3 = "none";
+        var c3 = "none";
+
+        console.log("checking game...");
+
+        if (gamePieceArray.length != 0) {
+            for (let i = 0; i < gamePieceArray.length; i++) {
+                if (gamePieceArray[i].name == "XPiece") {
+                    if (gamePieceArray[i].position.x == -483) {
+                        if (gamePieceArray[i].position.z == -483) {
+                            a1 = gamePieceArray[i].name;
+                            console.log(a1.name);
+                        } else if (gamePieceArray[i].position.z == 0) {
+                            a2 = gamePieceArray[i].name;
+                        } else if (gamePieceArray[i].position.z == 483) {
+                            a3 = gamePieceArray[i].name;
+                        }
+                    } else if (gamePieceArray[i].position.x == 0) {
+                        if (gamePieceArray[i].position.z == -483) {
+                            b1 = gamePieceArray[i].name;
+                        } else if (gamePieceArray[i].position.z == 0) {
+                            b2 = gamePieceArray[i].name;
+                        } else if (gamePieceArray[i].position.z == 483) {
+                            b3 = gamePieceArray[i].name;
+                        }
+                    } else if (gamePieceArray[i].position.x == 483) {
+                        if (gamePieceArray[i].position.z == -483) {
+                            c1 = gamePieceArray[i].name;
+                        } else if (gamePieceArray[i].position.z == 0) {
+                            c2 = gamePieceArray[i].name;
+                        } else if (gamePieceArray[i].position.z == 483) {
+                            c3 = gamePieceArray[i].name;
+                        }
+                    }
+                } else if (gamePieceArray[i].name == "OPiece") {
+                    if (gamePieceArray[i].position.x == -483) {
+                        if (gamePieceArray[i].position.z == -483) {
+                            a1 = gamePieceArray[i].name;
+                        } else if (gamePieceArray[i].position.z == 0) {
+                            a2 = gamePieceArray[i].name;
+                        } else if (gamePieceArray[i].position.z == 483) {
+                            a3 = gamePieceArray[i].name;
+                        }
+                    } else if (gamePieceArray[i].position.x == 0) {
+                        if (gamePieceArray[i].position.z == -483) {
+                            b1 = gamePieceArray[i].name;
+                        } else if (gamePieceArray[i].position.z == 0) {
+                            b2 = gamePieceArray[i].name;
+                        } else if (gamePieceArray[i].position.z == 483) {
+                            b3 = gamePieceArray[i].name;
+                        }
+                    } else if (gamePieceArray[i].position.x == 483) {
+                        if (gamePieceArray[i].position.z == -483) {
+                            c1 = gamePieceArray[i].name;
+                        } else if (gamePieceArray[i].position.z == 0) {
+                            c2 = gamePieceArray[i].name;
+                        } else if (gamePieceArray[i].position.z == 483) {
+                            c3 = gamePieceArray[i].name;
+                        }
+                    }
+                }
+            }
+        }
+
         if (gamePieceArray.length >= 3 && gamePieceArray.length < 9) {
             /* Row 1 */
-            if (tableArray[0][0] && tableArray[0][1] && tableArray[0][2]) {
+            if (A1 && B1 && C1) {
+                if ((a1 == b1) == c1) {
+                    if (a1 == "XPiece") {
+                        console.log("X wins");
+                        return true;
+                    } else if (a1 == "OPiece") {
+                        console.log("O wins");
+                        return true;
+                    }
+                }
             }
             /* Row 2 */
-            if (tableArray[1][0] && tableArray[1][1] && tableArray[1][2]) {
+            if (A2 && B2 && B2) {
+                if ((a2 == b2) == c2) {
+                    if (a2 == "XPiece") {
+                        console.log("X wins");
+                        return true;
+                    } else if (a2 == "OPiece") {
+                        console.log("O wins");
+                        return true;
+                    }
+                }
             }
             /* Row 3 */
-            if (tableArray[2][0] && tableArray[2][1] && tableArray[2][2]) {
+            if (A3 && B3 && C3) {
+                if ((a3 == b3) == c3) {
+                    if (a2 == "XPiece") {
+                        console.log("X wins");
+                        return true;
+                    } else if (a2 == "OPiece") {
+                        console.log("O wins");
+                        return true;
+                    }
+                }
             }
             /* Column A */
-            if (tableArray[0][0] && tableArray[1][0] && tableArray[2][0]) {
+            if (A1 && A2 && A3) {
+                if ((a1 == a2) == a3) {
+                    if (a1 == "XPiece") {
+                        console.log("X wins");
+                        return true;
+                    } else if (a1 == "OPiece") {
+                        console.log("O wins");
+                        return true;
+                    }
+                }
             }
             /* Column B */
-            if (tableArray[0][1] && tableArray[1][1] && tableArray[2][1]) {
+            if (B1 && B2 && B3) {
+                if ((b1 == b2) == b3) {
+                    if (b1 == "XPiece") {
+                        console.log("X wins");
+                        return true;
+                    } else if (b1 == "OPiece") {
+                        console.log("O wins");
+                        return true;
+                    }
+                }
             }
             /* Column C */
-            if (tableArray[0][2] && tableArray[1][2] && tableArray[2][2]) {
+            if (C1 && C2 && C3) {
+                if ((c1 == c2) == c3) {
+                    if (c1 == "XPiece") {
+                        console.log("X wins");
+                        return true;
+                    } else if (c1 == "OPiece") {
+                        console.log("O wins");
+                        return true;
+                    }
+                }
             }
             /* Top Left - Bottom Right */
-            if (tableArray[0][0] && tableArray[1][1] && tableArray[2][2]) {
+            if (A1 && B2 && C3) {
+                if ((a1 == b2) == c3) {
+                    if (a1 == "XPiece") {
+                        console.log("X wins");
+                        return true;
+                    } else if (a1 == "OPiece") {
+                        console.log("O wins");
+                        return true;
+                    }
+                }
             }
             /* Top Right - Bottom Left */
-            if (tableArray[0][2] && tableArray[1][1] && tableArray[2][0]) {
+            if (C1 && B2 && A3) {
+                if ((c1 == b2) == a3) {
+                    if (c1 == "XPiece") {
+                        console.log("X wins");
+                        return true;
+                    } else if (c1 == "OPiece") {
+                        console.log("O wins");
+                        return true;
+                    }
+                }
             }
         }
         // Game Over
         else if (gamePieceArray.length == 9) {
+            console.log("Cats game");
             return true;
         }
 
         // Default Case
+        console.log("no winners");
         return false;
     }
 
