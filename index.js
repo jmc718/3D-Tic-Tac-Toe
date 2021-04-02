@@ -67,12 +67,8 @@ function main() {
 
     const pieceSize = 175;
     var playerSwitch = true;
-    var gamePieceArray = [];
-    // var tableArray = [
-    //     [false, false, false],
-    //     [false, false, false],
-    //     [false, false, false],
-    // ];
+    
+    // Access by using newTableArray[row][column][0 for boolean, 1 for object]
     var newTableArray = [
         [[false], [false], [false]],
         [[false], [false], [false]],
