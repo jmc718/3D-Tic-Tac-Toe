@@ -67,13 +67,15 @@ function main() {
 
     const pieceSize = 175;
     var playerSwitch = true;
-    
+
     // Access by using newTableArray[row][column][0 for boolean, 1 for object]
     var newTableArray = [
         [[false], [false], [false]],
         [[false], [false], [false]],
         [[false], [false], [false]]
     ];
+    var piecesPlaced = 0;
+
     var clickBoxArray = [];
 
     /*******************************************************************************************
@@ -428,10 +430,12 @@ function main() {
 
             if (playerSwitch) {
                 newTableArray[r][c].push(new XPiece(c, r));
+                piecesPlaced++;
                 playerSwitch = false;
             } else {
 
                 newTableArray[r][c].push(new OPiece(c, r));
+                piecesPlaced++;
                 playerSwitch = true;
             }
             // load a sound and set it as the Audio object's buffer
@@ -448,6 +452,7 @@ function main() {
             intersects[0].object.material.opacity = 0;
 
             //checkGameCompleted();
+            checkGameCompleted();
         }
     }
 
@@ -478,7 +483,14 @@ function main() {
      * Resets the table array to be full of false
      ******************************************************************************************/
     function resetTableArray() {
-        var newTableArray = [
+
+        //Delete each game piece object
+        for (var i; i < 3; i++)
+            for (var j; j < 3; j++)
+                if (newTableArray[i][j][1])
+                    delete newTableArray[i][j][1];
+
+        newTableArray = [
             [[false], [false], [false]],
             [[false], [false], [false]],
             [[false], [false], [false]]
@@ -488,13 +500,91 @@ function main() {
     /*******************************************************************************************
      * I couldn't follow the other one, so I'm going to start over
      ******************************************************************************************/
-    function davidsGameCompleted(){
-        
+    function checkGameCompleted(){
+        // Access by using newTableArray[row][column][0 for boolean, 1 for object]
+        /*
+            0   1   2
+          -------------
+        0 |   |   |   |
+          -------------
+        1 |   |   |   |
+          -------------
+        2 |   |   |   |
+          -------------
+        */
+        // If there are at least enough pieces to be able to win
+        if (piecesPlaced >=3 && piecesPlaced < 9){
+            // Row 0
+            if (newTableArray[0][0][1] && newTableArray[0][1][1] && newTableArray[0][2][1]){
+                checkPieceTypes([0, 0], [0, 1], [0, 2]);
+            }
+            // Row 1
+            if (newTableArray[1][0][1] && newTableArray[1][1][1] && newTableArray[1][2][1]){
+                checkPieceTypes([1, 0], [1, 1], [1, 2]);
+            }
+            // Row 2
+            if (newTableArray[2][0][1] && newTableArray[2][1][1] && newTableArray[2][2][1]){
+                checkPieceTypes([2, 0], [2, 1], [2, 2]);
+            }
+
+            // Column 0
+            if (newTableArray[0][0][1] && newTableArray[1][0][1] && newTableArray[2][0][1]){
+                checkPieceTypes([0, 0], [1, 0], [2, 0]);
+            }
+            // Column 1
+            if (newTableArray[0][1][1] && newTableArray[1][1][1] && newTableArray[2][1][1]){
+                checkPieceTypes([0, 1], [1, 1], [2, 1]);
+            }
+            // Column 2
+            if (newTableArray[0][2][1] && newTableArray[1][2][1] && newTableArray[2][2][1]){
+                checkPieceTypes([0, 2], [1, 2], [2, 2]);
+            }
+
+            // Top Left to Bottom Right
+            if (newTableArray[0][0][1] && newTableArray[1][1][1] && newTableArray[2][2][1]){
+                checkPieceTypes([0, 0], [1, 1], [2, 2]);
+            }
+            // Top Right to Bottom Left
+            if (newTableArray[0][2][1] && newTableArray[1][1][1] && newTableArray[2][0][1]){
+                checkPieceTypes([0, 2], [1, 1], [2, 0]);
+            }
+        }
+        // Game Over
+        else if (piecesPlaced == 9){
+
+        }
+
+        // default case
+        return false;
+    }
+
+    /*******************************************************************************************
+     * Returns true if 3 pieces are the same type
+     ******************************************************************************************/
+    function checkPieceTypes(piece1, piece2, piece3){
+        // It's very ugly, but It just checks 
+        //     - the first piece's name with the second piece's name &
+        //     - the first piece's name with the third piece's name
+        // and returns true if both conditions are satisfied
+        if ((newTableArray[piece1[0]][piece1[1]][1].name == newTableArray[piece2[0]][piece2[1]][1].name) &&
+            (newTableArray[piece1[0]][piece1[1]][1].name == newTableArray[piece3[0]][piece3[1]][1].name)){
+                // Send over the name of the piece that won
+                win(newTableArray[piece1[0]][piece1[1]][1].name);
+                return true;
+            }
+        return false;
+    }
+
+    /*******************************************************************************************
+     * What happens when the game is won
+     ******************************************************************************************/
+    function win(winningPiece){
+        console.log(winningPiece + " w i n");
     }
     /*******************************************************************************************
      * Return true if the game has been completed
      ******************************************************************************************/
-    function checkGameCompleted() {
+    function oldCheckGameCompleted() {
         // I commented it out at the bottom of onClick to test another version of this
         /*
             A   B   C
