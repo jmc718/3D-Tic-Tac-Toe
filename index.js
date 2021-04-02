@@ -68,10 +68,15 @@ function main() {
     const pieceSize = 175;
     var playerSwitch = true;
     var gamePieceArray = [];
-    var tableArray = [
-        [false, false, false],
-        [false, false, false],
-        [false, false, false],
+    // var tableArray = [
+    //     [false, false, false],
+    //     [false, false, false],
+    //     [false, false, false],
+    // ];
+    var newTableArray = [
+        [[false], [false], [false]],
+        [[false], [false], [false]],
+        [[false], [false], [false]]
     ];
     var clickBoxArray = [];
 
@@ -96,7 +101,7 @@ function main() {
     }
 
     /*******************************************************************************************
-     * Unofficial Parent of the X & O pieces, as well as clickbox
+     * Parent class of the X & O pieces, as well as clickbox
      ******************************************************************************************/
     class GamePiece {
         constructor(col, row) {
@@ -109,64 +114,64 @@ function main() {
 
         place(piece, col, row) {
             /*
-                A   B   C
+                0   1   2
+              -------------
+            0 |   |   |   |
               -------------
             1 |   |   |   |
               -------------
             2 |   |   |   |
               -------------
-            3 |   |   |   |
-              -------------
             */
             // Column A
-            if (col == "A" && row == 1) {
+            if (col == 0 && row == 0) {
                 piece.position.x = -483;
                 piece.position.z = -483;
-                tableArray[0][0] = true;
+                newTableArray[0][0][0] = true;
             }
-            if (col == "A" && row == 2) {
+            if (col == 0 && row == 1) {
                 piece.position.x = -483;
                 piece.position.z = 0;
-                tableArray[1][0] = true;
+                newTableArray[1][0][0] = true;
             }
-            if (col == "A" && row == 3) {
+            if (col == 0 && row == 2) {
                 piece.position.x = -483;
                 piece.position.z = 483;
-                tableArray[2][0] = true;
+                newTableArray[2][0][0] = true;
             }
 
             // Column B
-            if (col == "B" && row == 1) {
+            if (col == 1 && row == 0) {
                 piece.position.x = 0;
                 piece.position.z = -483;
-                tableArray[0][1] = true;
+                newTableArray[0][1][0] = true;
             }
-            if (col == "B" && row == 2) {
+            if (col == 1 && row == 1) {
                 piece.position.x = 0;
                 piece.position.z = 0;
-                tableArray[1][1] = true;
+                newTableArray[1][1][0] = true;
             }
-            if (col == "B" && row == 3) {
+            if (col == 1 && row == 2) {
                 piece.position.x = 0;
                 piece.position.z = 483;
-                tableArray[2][1] = true;
+                newTableArray[2][1][0] = true;
             }
 
             // Column C
-            if (col == "C" && row == 1) {
+            if (col == 2 && row == 0) {
                 piece.position.x = 483;
                 piece.position.z = -483;
-                tableArray[0][2] = true;
+                newTableArray[0][2][0] = true;
             }
-            if (col == "C" && row == 2) {
+            if (col == 2 && row == 1) {
                 piece.position.x = 483;
                 piece.position.z = 0;
-                tableArray[1][2] = true;
+                newTableArray[1][2][0] = true;
             }
-            if (col == "C" && row == 3) {
+            if (col == 2 && row == 2) {
                 piece.position.x = 483;
                 piece.position.z = 483;
-                tableArray[2][2] = true;
+                newTableArray[2][2][0] = true;
             }
         }
     }
@@ -377,15 +382,15 @@ function main() {
      ******************************************************************************************/
     function createClickables() {
         return [
-            new ClickBox("A", 1),
-            new ClickBox("B", 1),
-            new ClickBox("C", 1),
-            new ClickBox("A", 2),
-            new ClickBox("B", 2),
-            new ClickBox("C", 2),
-            new ClickBox("A", 3),
-            new ClickBox("B", 3),
-            new ClickBox("C", 3),
+            new ClickBox(0, 0),
+            new ClickBox(1, 0),
+            new ClickBox(2, 0),
+            new ClickBox(0, 1),
+            new ClickBox(1, 1),
+            new ClickBox(2, 1),
+            new ClickBox(0, 2),
+            new ClickBox(1, 2),
+            new ClickBox(2, 2),
         ];
     }
 
@@ -407,29 +412,30 @@ function main() {
             let c;
             let position = intersects[0].object.position;
             if (position.x < 0) {
-                c = "A";
+                c = 0;
             }
             if (position.x == 0) {
-                c = "B";
+                c = 1;
             }
             if (position.x > 0) {
-                c = "C";
+                c = 2;
             }
             if (position.z < 0) {
-                r = 1;
+                r = 0;
             }
             if (position.z == 0) {
-                r = 2;
+                r = 1;
             }
             if (position.z > 0) {
-                r = 3;
+                r = 2;
             }
 
             if (playerSwitch) {
-                gamePieceArray.push(new XPiece(c, r));
+                newTableArray[r][c].push(new XPiece(c, r));
                 playerSwitch = false;
             } else {
-                gamePieceArray.push(new OPiece(c, r));
+
+                newTableArray[r][c].push(new OPiece(c, r));
                 playerSwitch = true;
             }
             // load a sound and set it as the Audio object's buffer
@@ -445,7 +451,7 @@ function main() {
             intersects[0].object.name = "clickedbox";
             intersects[0].object.material.opacity = 0;
 
-            checkGameCompleted();
+            //checkGameCompleted();
         }
     }
 
@@ -466,7 +472,6 @@ function main() {
             hoveredObject.material.opacity = 0.0;
             hoveredObject = null;
         }
-        // if (intersects[0].object.name == "clickbox" && gamePieceArray.find((piece) => piece.getID() === intersects[0].object.id)) {
         if (intersects.length != 0 && intersects[0].object.name == "clickbox") {
             hoveredObject = intersects[0].object;
             intersects[0].object.material.opacity = 0.5;
@@ -477,17 +482,24 @@ function main() {
      * Resets the table array to be full of false
      ******************************************************************************************/
     function resetTableArray() {
-        tableArray = [
-            [false, false, false],
-            [false, false, false],
-            [false, false, false],
+        var newTableArray = [
+            [[false], [false], [false]],
+            [[false], [false], [false]],
+            [[false], [false], [false]]
         ];
     }
 
     /*******************************************************************************************
+     * I couldn't follow the other one, so I'm going to start over
+     ******************************************************************************************/
+    function davidsGameCompleted(){
+        
+    }
+    /*******************************************************************************************
      * Return true if the game has been completed
      ******************************************************************************************/
     function checkGameCompleted() {
+        // I commented it out at the bottom of onClick to test another version of this
         /*
             A   B   C
           -------------
@@ -746,10 +758,12 @@ function main() {
         // If you change the speed, be sure it is a clean divisor of the starting y position minus 960
         // For example, right now it's 2560 - 960 which equals 1600. The speed of 400 divides cleanly into
         // 1600, meaning it will end nicely on 960 instead of some other weird position
-        let i;
-        for (i = 0; i < gamePieceArray.length; i++) {
-            if (gamePieceArray[i].position.y > 960) {
-                gamePieceArray[i].position.y -= 400;
+        for (let i = 0; i < 3; i++) {
+            for (let j = 0; j < 3; j++){
+                if (newTableArray[i][j][1]) {
+                    if (newTableArray[i][j][1].position.y > 960)
+                        newTableArray[i][j][1].position.y -= 400;
+                }
             }
         }
         pickHelper.pick(pickPosition, scene, camera);
