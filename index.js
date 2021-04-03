@@ -580,6 +580,28 @@ function main() {
      ******************************************************************************************/
     function win(winningPiece){
         console.log(winningPiece + " w i n");
+
+        if(winningPiece == "xpiece"){
+            audioLoader.load("./.resources/sound/x_win.wav", function (buffer) {
+                sound.setBuffer(buffer);
+                sound.setLoop(false);
+                sound.isPlaying = false;
+                sound.setVolume(0.5);
+                sound.play(sound.delay = 1);
+            });
+        }
+
+        else if(winningPiece == "opiece"){
+            audioLoader.load("./.resources/sound/o_win.wav", function (buffer) {
+                sound.setBuffer(buffer);
+                sound.setLoop(false);
+                sound.isPlaying = false;
+                sound.setVolume(0.5);
+                sound.play(sound.delay = 1);
+            });
+        }
+
+
     }
     /*******************************************************************************************
      * Return true if the game has been completed
