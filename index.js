@@ -581,7 +581,10 @@ function main() {
     function win(winningPiece){
         console.log(winningPiece + " w i n");
 
+
+        // If X wins the game
         if(winningPiece == "xpiece"){
+            // Play the win vocal audio
             audioLoader.load("./.resources/sound/x_win.wav", function (buffer) {
                 sound.setBuffer(buffer);
                 sound.setLoop(false);
@@ -591,7 +594,9 @@ function main() {
             });
         }
 
+        // If O wins the game
         else if(winningPiece == "opiece"){
+            // Play the win vocal audio
             audioLoader.load("./.resources/sound/o_win.wav", function (buffer) {
                 sound.setBuffer(buffer);
                 sound.setLoop(false);
