@@ -60,7 +60,7 @@ function main() {
         .load(["posx.jpg", "negx.jpg", "posy.jpg", "negy.jpg", "posz.jpg", "negz.jpg"]);
 
     const pieceSize = 175;
-    var isPlayer1Turn = Math.random < 0.5;
+    var isPlayer1Turn = Math.random() < 0.5;
 
     // Access by using newTableArray[row][column][0 for boolean, 1 for object]
     var newTableArray = [
@@ -523,7 +523,7 @@ function main() {
           -------------
         */
         // If there are at least enough pieces to be able to win
-        if (piecesPlaced >= 3 && piecesPlaced < 9) {
+        if (piecesPlaced >= 3) {
             // Row 0
             if (newTableArray[0][0][0] && newTableArray[0][1][0] && newTableArray[0][2][0]) {
                 if (checkPieceTypes([0, 0], [0, 1], [0, 2]))
@@ -568,7 +568,7 @@ function main() {
             }
         }
         // Game Over
-        else if (piecesPlaced == 9) {
+        if (piecesPlaced == 9) {
             return true;
         }
 
@@ -606,8 +606,8 @@ function main() {
                 sound.setBuffer(buffer);
                 sound.setLoop(false);
                 sound.isPlaying = false;
-                sound.setVolume(0.2);
-                sound.play((sound.delay = 1));
+                sound.setVolume(0.3);
+                sound.play((sound.delay = .6));
             });
         }
 
@@ -618,8 +618,8 @@ function main() {
                 sound.setBuffer(buffer);
                 sound.setLoop(false);
                 sound.isPlaying = false;
-                sound.setVolume(0.2);
-                sound.play((sound.delay = 1));
+                sound.setVolume(0.3);
+                sound.play((sound.delay = .6));
             });
         }
     }
