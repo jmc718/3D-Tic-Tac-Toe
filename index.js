@@ -464,8 +464,9 @@ function main() {
                 intersects[0].object.name = "clickedbox";
                 intersects[0].object.material.opacity = 0;
             });
-            gameWon = checkGameCompleted();
         }
+
+        gameWon = checkGameCompleted();
     }
 
     /*******************************************************************************************
@@ -509,6 +510,7 @@ function main() {
      * I couldn't follow the other one, so I'm going to start over
      ******************************************************************************************/
     function checkGameCompleted() {
+        console.log(newTableArray);
         // Access by using newTableArray[row][column][0 for boolean, 1 for object]
         /*
             0   1   2
@@ -523,38 +525,46 @@ function main() {
         // If there are at least enough pieces to be able to win
         if (piecesPlaced >= 3 && piecesPlaced < 9) {
             // Row 0
-            if (newTableArray[0][0][1] && newTableArray[0][1][1] && newTableArray[0][2][1]) {
-                return checkPieceTypes([0, 0], [0, 1], [0, 2]);
+            if (newTableArray[0][0][0] && newTableArray[0][1][0] && newTableArray[0][2][0]) {
+                if (checkPieceTypes([0, 0], [0, 1], [0, 2]))
+                    return true;
             }
             // Row 1
-            if (newTableArray[1][0][1] && newTableArray[1][1][1] && newTableArray[1][2][1]) {
-                return checkPieceTypes([1, 0], [1, 1], [1, 2]);
+            if (newTableArray[1][0][0] && newTableArray[1][1][0] && newTableArray[1][2][0]) {
+                if (checkPieceTypes([1, 0], [1, 1], [1, 2]))
+                    return true;
             }
             // Row 2
-            if (newTableArray[2][0][1] && newTableArray[2][1][1] && newTableArray[2][2][1]) {
-                return checkPieceTypes([2, 0], [2, 1], [2, 2]);
+            if (newTableArray[2][0][0] && newTableArray[2][1][0] && newTableArray[2][2][0]) {
+                if (checkPieceTypes([2, 0], [2, 1], [2, 2]))
+                    return true;
             }
 
             // Column 0
-            if (newTableArray[0][0][1] && newTableArray[1][0][1] && newTableArray[2][0][1]) {
-                return checkPieceTypes([0, 0], [1, 0], [2, 0]);
+            if (newTableArray[0][0][0] && newTableArray[1][0][0] && newTableArray[2][0][0]) {
+                if (checkPieceTypes([0, 0], [1, 0], [2, 0]))
+                    return true;
             }
             // Column 1
-            if (newTableArray[0][1][1] && newTableArray[1][1][1] && newTableArray[2][1][1]) {
-                return checkPieceTypes([0, 1], [1, 1], [2, 1]);
+            if (newTableArray[0][1][0] && newTableArray[1][1][0] && newTableArray[2][1][0]) {
+                if (checkPieceTypes([0, 1], [1, 1], [2, 1]))
+                    return true;
             }
             // Column 2
-            if (newTableArray[0][2][1] && newTableArray[1][2][1] && newTableArray[2][2][1]) {
-                return checkPieceTypes([0, 2], [1, 2], [2, 2]);
+            if (newTableArray[0][2][0] && newTableArray[1][2][0] && newTableArray[2][2][0]) {
+                if (checkPieceTypes([0, 2], [1, 2], [2, 2]))
+                    return true;
             }
 
             // Top Left to Bottom Right
-            if (newTableArray[0][0][1] && newTableArray[1][1][1] && newTableArray[2][2][1]) {
-                return checkPieceTypes([0, 0], [1, 1], [2, 2]);
+            if (newTableArray[0][0][0] && newTableArray[1][1][0] && newTableArray[2][2][0]) {
+                if (checkPieceTypes([0, 0], [1, 1], [2, 2]))
+                    return true;
             }
             // Top Right to Bottom Left
-            if (newTableArray[0][2][1] && newTableArray[1][1][1] && newTableArray[2][0][1]) {
-                return checkPieceTypes([0, 2], [1, 1], [2, 0]);
+            if (newTableArray[0][2][0] && newTableArray[1][1][0] && newTableArray[2][0][0]) {
+                if (checkPieceTypes([0, 2], [1, 1], [2, 0]))
+                    return true;
             }
         }
         // Game Over
