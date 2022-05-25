@@ -1,28 +1,15 @@
 # 3D Tic-Tac-Toe
 
+# Overview
+
 A 3D tic-tac-toe game for our Computer Graphics class.
 
-## Due : April 6 (4 weeks)
+[Software Demo Video](https://youtu.be/vwPKGMTaHs8)
 
-### Week 1: Create the tic tac toe board
+# Development Environment
 
-    -	The board
-    -	‘O’
-    -	‘X’
-    -	Platform?
+This project was created with ThreeJS. We used VSCode as our IDE and collaborated with Live Share.
 
-### Week 2 : Tic tac toe program
 
-    -	Playable game
-    -	Loops the game
-    -	Maybe simple buttons
 
-### Week 3 : Animations – Make it pretty
 
-    -	Pieces drop down
-    -	Maybe a menu of some sort with GUI
-
-### Week 4 : Stretch / Extras
-
-    -	Fun animations
-    -	Computer player
