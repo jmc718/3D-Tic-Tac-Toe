@@ -36,7 +36,7 @@ function main() {
     const red = 0xff3a17;
     const blue = 0x34ebba;
     const skyColor = 0xffffff;
-    const table = ".resources/blender/table.obj";
+    const table = "./.resources/blender/table.obj";
 
     window.addEventListener("resize", () => {
         renderer.setSize(window.innerWidth, window.innerHeight);
@@ -53,10 +53,10 @@ function main() {
 
     var hoveredObject;
 
-    const marble = textureLoader.load(".resources/textures/Red_Marble_002_COLOR.jpg");
+    const marble = textureLoader.load("./.resources/textures/Red_Marble_002_COLOR.jpg");
 
     scene.background = new THREE.CubeTextureLoader()
-        .setPath(".resources/textures/field-skyboxes/Meadow/")
+        .setPath("./.resources/textures/field-skyboxes/Meadow/")
         .load(["posx.jpg", "negx.jpg", "posy.jpg", "negy.jpg", "posz.jpg", "negz.jpg"]);
 
     const pieceSize = 175;
@@ -453,7 +453,7 @@ function main() {
                 isPlayer1Turn = true;
             }
             // load a sound and set it as the Audio object's buffer
-            audioLoader.load(".resources/sound/piece_drop.wav", function (buffer) {
+            audioLoader.load("./.resources/sound/piece_drop.wav", function (buffer) {
                 sound.setBuffer(buffer);
                 sound.setLoop(false);
                 sound.isPlaying = false;
@@ -594,7 +594,7 @@ function main() {
         // If X wins the game
         if (winningPiece == "xpiece") {
             // Play the win vocal audio
-            audioLoader.load(".resources/sound/x_win.wav", function (buffer) {
+            audioLoader.load("./.resources/sound/x_win.wav", function (buffer) {
                 sound.setBuffer(buffer);
                 sound.setLoop(false);
                 sound.isPlaying = false;
@@ -606,7 +606,7 @@ function main() {
         // If O wins the game
         else if (winningPiece == "opiece") {
             // Play the win vocal audio
-            audioLoader.load(".resources/sound/o_win.wav", function (buffer) {
+            audioLoader.load("./.resources/sound/o_win.wav", function (buffer) {
                 sound.setBuffer(buffer);
                 sound.setLoop(false);
                 sound.isPlaying = false;
